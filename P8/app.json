@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "JSON API Search App",
+    "slug": "json-api-search-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "android": {
+      "edgeToEdgeEnabled": true
+    }
+  }
+}
