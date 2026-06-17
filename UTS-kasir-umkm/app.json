@@ -20,7 +20,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.kanghaerin.pos"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -41,7 +45,13 @@
           "photosPermission": "Aplikasi membutuhkan akses galeri untuk foto produk.",
           "cameraPermission": "Aplikasi membutuhkan akses kamera untuk memfoto produk."
         }
-      ]
-    ]
+      ],
+      "expo-sqlite"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "876ab7e7-5c07-478a-a9c3-f0509553a180"
+      }
+    }
   }
 }
