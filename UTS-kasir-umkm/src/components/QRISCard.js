@@ -1,12 +1,29 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import QrisProviderLogo from './QrisProviderLogo';
 import { colors, cardShadow, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function QRISCard({ account, onEdit, onDelete }) {
+  const { appColors } = useAppSettings();
+  const title = account.label?.trim() || account.providerName;
+  const subtitle = account.label?.trim()
+    ? `${account.providerName} - ${account.merchantName || '-'}`
+    : account.merchantName;
+
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+      ]}
+    >
       <View style={styles.row}>
-        <View style={styles.logoWrap}>
+        <View
+          style={[
+            styles.logoWrap,
+            { backgroundColor: appColors.primarySoft, borderColor: appColors.borderLight },
+          ]}
+        >
           <QrisProviderLogo
             providerName={account.providerName}
             size={56}
@@ -14,13 +31,18 @@ export default function QRISCard({ account, onEdit, onDelete }) {
           />
         </View>
         <View style={styles.info}>
-          <Text style={styles.provider}>{account.providerName}</Text>
-          <Text style={styles.merchant}>{account.merchantName}</Text>
+          <Text style={[styles.provider, { color: appColors.ink }]}>{title}</Text>
+          <Text style={[styles.merchant, { color: appColors.inkMuted }]}>
+            {subtitle}
+          </Text>
         </View>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.editBtn} onPress={() => onEdit(account)}>
-          <Text style={styles.editText}>Ubah</Text>
+        <TouchableOpacity
+          style={[styles.editBtn, { backgroundColor: appColors.primarySoft }]}
+          onPress={() => onEdit(account)}
+        >
+          <Text style={[styles.editText, { color: appColors.primary }]}>Ubah</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.delBtn} onPress={() => onDelete(account.id)}>
           <Text style={styles.delText}>Hapus</Text>

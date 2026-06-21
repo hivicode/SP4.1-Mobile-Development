@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { colors, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function ButtonPrimary({
   title,
@@ -8,6 +9,7 @@ export default function ButtonPrimary({
   variant = 'primary',
   style,
 }) {
+  const { appColors } = useAppSettings();
   const isOutline = variant === 'outline';
   const isAccent = variant === 'accent';
   return (
@@ -17,6 +19,13 @@ export default function ButtonPrimary({
         isOutline && styles.outline,
         !isOutline && !isAccent && styles.filled,
         !isOutline && isAccent && styles.accentFilled,
+        !isOutline && !isAccent && { backgroundColor: appColors.primary },
+        !isOutline && isAccent && { backgroundColor: appColors.accent },
+        isOutline && {
+          backgroundColor: appColors.card,
+          borderWidth: 1,
+          borderColor: appColors.borderLight,
+        },
         disabled && styles.disabled,
         style,
       ]}
@@ -27,8 +36,10 @@ export default function ButtonPrimary({
       <Text
         style={[
           styles.label,
+          !isOutline && !isAccent && { color: appColors.onPrimary },
           isOutline && styles.labelOutline,
-          isAccent && !isOutline && styles.labelOnAccent,
+          isOutline && { color: appColors.primary },
+          isAccent && !isOutline && { color: appColors.onSecondary },
         ]}
       >
         {title}

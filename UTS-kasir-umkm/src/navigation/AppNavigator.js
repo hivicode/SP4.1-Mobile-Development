@@ -1,4 +1,12 @@
-import { Platform, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -8,9 +16,11 @@ import {
   Package,
   ShoppingCart,
   BarChart3,
+  Settings,
 } from 'lucide-react-native';
 
-import { colors, inter } from '../theme/design';
+import { inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 import HomeScreen from '../screens/HomeScreen';
 import ProductScreen from '../screens/ProductScreen';
@@ -21,90 +31,146 @@ import QRISScreen from '../screens/QRISScreen';
 import AddQRISScreen from '../screens/AddQRISScreen';
 import ReceiptScreen from '../screens/ReceiptScreen';
 import ReportScreen from '../screens/ReportScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const stackHeaderOpts = {
-  headerStyle: { backgroundColor: colors.headerGreen },
-  headerTintColor: '#FFFFFF',
-  headerTitleStyle: { ...inter.extraBold, fontSize: 18, color: '#FFFFFF' },
-  headerShadowVisible: false,
+const TAB_ICONS = {
+  HomeScreen: Home,
+  ProductScreen: Package,
+  CashierScreen: ShoppingCart,
+  ReportScreen: BarChart3,
+  SettingsScreen: Settings,
 };
 
-function IconInPill({ focused, children }) {
-  const compact = Platform.OS === 'web';
+function SlidingTabBar({ state, descriptors, navigation }) {
+  const { appColors } = useAppSettings();
+  const insets = useSafeAreaInsets();
+  const isWeb = Platform.OS === 'web';
+  const [barWidth, setBarWidth] = useState(0);
+  const translateX = useRef(new Animated.Value(0)).current;
+  const bottomInset = Math.max(
+    insets.bottom,
+    Platform.OS === 'android' ? 16 : isWeb ? 8 : 12
+  );
+  const itemWidth = barWidth > 0 ? barWidth / state.routes.length : 0;
+  const indicatorWidth = Math.min(isWeb ? 46 : 58, Math.max(42, itemWidth - 20));
+  const indicatorHeight = isWeb ? 34 : 38;
+  const indicatorTop = isWeb ? 5 : 7;
+  const iconSize = isWeb ? 18 : 21;
+
+  useEffect(() => {
+    if (!itemWidth) return;
+    Animated.spring(translateX, {
+      toValue: state.index * itemWidth + (itemWidth - indicatorWidth) / 2,
+      damping: 19,
+      stiffness: 190,
+      mass: 0.8,
+      useNativeDriver: true,
+    }).start();
+  }, [indicatorWidth, itemWidth, state.index, translateX]);
+
   return (
     <View
       style={[
-        styles.iconPill,
-        compact && styles.iconPillWeb,
-        focused ? styles.iconPillFocused : styles.iconPillInactive,
+        styles.tabShell,
+        {
+          backgroundColor: appColors.card,
+          borderTopColor: appColors.borderLight,
+          paddingBottom: bottomInset,
+        },
       ]}
     >
-      {children}
+      <View
+        style={styles.tabRow}
+        onLayout={(event) => setBarWidth(event.nativeEvent.layout.width)}
+      >
+        {barWidth > 0 ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.slidingIndicator,
+              {
+                width: indicatorWidth,
+                height: indicatorHeight,
+                top: indicatorTop,
+                backgroundColor: appColors.primary,
+                transform: [{ translateX }],
+              },
+            ]}
+          />
+        ) : null}
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const focused = state.index === index;
+          const label =
+            options.tabBarLabel !== undefined
+              ? options.tabBarLabel
+              : options.title !== undefined
+                ? options.title
+                : route.name;
+          const Icon = TAB_ICONS[route.name] || Home;
+          const iconColor = focused ? appColors.onPrimary : appColors.tabInactive;
+          const labelColor = focused ? appColors.primary : appColors.tabInactive;
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!focused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          const onLongPress = () => {
+            navigation.emit({
+              type: 'tabLongPress',
+              target: route.key,
+            });
+          };
+
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={focused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarButtonTestID}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={styles.tabItem}
+            >
+              <View style={[styles.tabIconSlot, { height: indicatorHeight + 8 }]}>
+                <Icon size={iconSize} color={iconColor} strokeWidth={2.4} />
+              </View>
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.tabLabel,
+                  isWeb && styles.tabLabelWeb,
+                  { color: labelColor },
+                ]}
+              >
+                {label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 function MainTabs() {
-  const insets = useSafeAreaInsets();
-  const isWeb = Platform.OS === 'web';
-  const bottomInset = Math.max(
-    insets.bottom,
-    Platform.OS === 'android' ? 16 : isWeb ? 8 : 12
-  );
-  const tabBarBottomGap = bottomInset + (isWeb ? 6 : 10);
-  const iconSize = isWeb ? 18 : 22;
-
   return (
     <Tab.Navigator
+      tabBar={(props) => <SlidingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: true,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.tabInactive,
-        tabBarHideOnKeyboard: !isWeb,
-        tabBarIconStyle: {
-          marginTop: isWeb ? 2 : 4,
-          marginBottom: isWeb ? 0 : 4,
-        },
-        tabBarItemStyle: isWeb
-          ? {
-              paddingHorizontal: 2,
-              flex: 1,
-              minWidth: 0,
-              overflow: 'visible',
-            }
-          : undefined,
-        tabBarStyle: {
-          backgroundColor: colors.white,
-          borderTopColor: colors.borderLight,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          paddingTop: isWeb ? 6 : 6,
-          paddingBottom: tabBarBottomGap,
-          paddingHorizontal: isWeb ? 4 : 8,
-          minHeight: (isWeb ? 60 : 56) + tabBarBottomGap,
-          height: undefined,
-          ...(isWeb && { alignSelf: 'stretch', width: '100%', maxWidth: '100%' }),
-        },
-        tabBarLabelPosition: 'below-icon',
-        tabBarLabelStyle: isWeb
-          ? {
-              fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-              fontSize: 11,
-              fontWeight: '600',
-              marginTop: 4,
-              marginBottom: 6,
-              lineHeight: 14,
-            }
-          : {
-              ...inter.bold,
-              fontSize: 11,
-              marginTop: 2,
-              marginBottom:
-                Platform.OS === 'android' ? 6 : 4,
-            },
       }}
     >
       <Tab.Screen
@@ -112,15 +178,6 @@ function MainTabs() {
         component={HomeScreen}
         options={{
           tabBarLabel: 'Home',
-          tabBarIcon: ({ focused, color }) => (
-            <IconInPill focused={focused}>
-              <Home
-                size={iconSize}
-                color={focused ? '#FFFFFF' : color}
-                strokeWidth={2.4}
-              />
-            </IconInPill>
-          ),
         }}
       />
       <Tab.Screen
@@ -128,15 +185,6 @@ function MainTabs() {
         component={ProductScreen}
         options={{
           tabBarLabel: 'Produk',
-          tabBarIcon: ({ focused, color }) => (
-            <IconInPill focused={focused}>
-              <Package
-                size={iconSize}
-                color={focused ? '#FFFFFF' : color}
-                strokeWidth={2.4}
-              />
-            </IconInPill>
-          ),
         }}
       />
       <Tab.Screen
@@ -144,15 +192,6 @@ function MainTabs() {
         component={CashierScreen}
         options={{
           tabBarLabel: 'Kasir',
-          tabBarIcon: ({ focused, color }) => (
-            <IconInPill focused={focused}>
-              <ShoppingCart
-                size={iconSize}
-                color={focused ? '#FFFFFF' : color}
-                strokeWidth={2.4}
-              />
-            </IconInPill>
-          ),
         }}
       />
       <Tab.Screen
@@ -160,15 +199,13 @@ function MainTabs() {
         component={ReportScreen}
         options={{
           tabBarLabel: 'Laporan',
-          tabBarIcon: ({ focused, color }) => (
-            <IconInPill focused={focused}>
-              <BarChart3
-                size={iconSize}
-                color={focused ? '#FFFFFF' : color}
-                strokeWidth={2.4}
-              />
-            </IconInPill>
-          ),
+        }}
+      />
+      <Tab.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
+        options={{
+          tabBarLabel: 'Profil',
         }}
       />
     </Tab.Navigator>
@@ -176,24 +213,31 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
+  const { appColors } = useAppSettings();
+
   return (
     <NavigationContainer
       theme={{
         ...DefaultTheme,
         colors: {
           ...DefaultTheme.colors,
-          primary: colors.primary,
-          background: colors.pageBg,
-          card: colors.white,
-          text: colors.ink,
-          border: colors.borderLight,
-          notification: colors.accent,
+          primary: appColors.primary,
+          background: appColors.pageBg,
+          card: appColors.card,
+          text: appColors.ink,
+          border: appColors.borderLight,
+          notification: appColors.accent,
         },
       }}
     >
       <Stack.Navigator
         initialRouteName="MainTabs"
-        screenOptions={stackHeaderOpts}
+        screenOptions={{
+          headerStyle: { backgroundColor: appColors.headerGreen },
+          headerTintColor: '#FFFFFF',
+          headerTitleStyle: { ...inter.extraBold, fontSize: 18, color: '#FFFFFF' },
+          headerShadowVisible: false,
+        }}
       >
         <Stack.Screen
           name="MainTabs"
@@ -231,22 +275,44 @@ export default function AppNavigator() {
 }
 
 const styles = StyleSheet.create({
-  iconPill: {
+  tabShell: {
+    position: 'relative',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 10,
+    paddingHorizontal: 8,
+    minHeight: 78,
+    overflow: 'hidden',
+  },
+  slidingIndicator: {
+    position: 'absolute',
+    left: 0,
+    borderRadius: 999,
+  },
+  tabRow: {
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  tabItem: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 2,
+    paddingTop: 1,
+  },
+  tabIconSlot: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 7,
-    borderRadius: 999,
+    marginBottom: 6,
   },
-  iconPillInactive: {
-    backgroundColor: 'transparent',
+  tabLabel: {
+    ...inter.bold,
+    fontSize: 11,
+    lineHeight: 14,
   },
-  iconPillFocused: {
-    backgroundColor: colors.primary,
-  },
-  iconPillWeb: {
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    borderRadius: 999,
+  tabLabelWeb: {
+    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    fontWeight: '600',
   },
 });

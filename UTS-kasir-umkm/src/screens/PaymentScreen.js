@@ -17,6 +17,7 @@ import {
   getQrisAccounts,
 } from '../storage/storage';
 import { colors, cardShadow, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 function makeTxId() {
   return `TX-${Date.now()}`;
@@ -43,6 +44,7 @@ function formatTxnCreated(dt) {
 }
 
 export default function PaymentScreen({ navigation, route }) {
+  const { settings, appColors } = useAppSettings();
   const { cartItems, cartTotal } = route.params || {};
   const [step, setStep] = useState('method');
   const [qrisList, setQrisList] = useState([]);
@@ -75,6 +77,7 @@ export default function PaymentScreen({ navigation, route }) {
   }, [step, qrisDeadlineMs]);
 
   const formatMoney = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
+  const merchantName = settings.storeName || 'Kasir UMKM';
 
   const finishPayment = async (methodLabel) => {
     const safeItems = Array.isArray(cartItems) ? cartItems : [];
@@ -120,10 +123,12 @@ export default function PaymentScreen({ navigation, route }) {
       return (
         <View style={styles.pad}>
           <Text style={styles.title}>Metode pembayaran</Text>
-          <Text style={styles.totalHint}>Total {formatMoney(cartTotal)}</Text>
+          <Text style={[styles.totalHint, { color: appColors.primary }]}>
+            Total {formatMoney(cartTotal)}
+          </Text>
 
           <TouchableOpacity style={styles.methodCard} onPress={onCash} activeOpacity={0.92}>
-            <Text style={styles.methodTitle}>Cash</Text>
+            <Text style={[styles.methodTitle, { color: appColors.primary }]}>Cash</Text>
             <Text style={styles.methodDesc}>Bayar tunai</Text>
           </TouchableOpacity>
 
@@ -138,7 +143,7 @@ export default function PaymentScreen({ navigation, route }) {
             }}
             activeOpacity={0.92}
           >
-            <Text style={styles.methodTitle}>QRIS</Text>
+            <Text style={[styles.methodTitle, { color: appColors.primary }]}>QRIS</Text>
             <Text style={styles.methodDesc}>Pilih akun QRIS</Text>
           </TouchableOpacity>
 
@@ -179,7 +184,9 @@ export default function PaymentScreen({ navigation, route }) {
       return (
         <View style={[styles.pad, styles.flexGrow]}>
           <Text style={styles.title}>Pilih penyedia QRIS</Text>
-          <Text style={styles.totalHint}>Total {formatMoney(cartTotal)}</Text>
+          <Text style={[styles.totalHint, { color: appColors.primary }]}>
+            Total {formatMoney(cartTotal)}
+          </Text>
           <FlatList
             data={qrisList}
             keyExtractor={(item, index) => String(item?.id ?? index)}
@@ -191,7 +198,12 @@ export default function PaymentScreen({ navigation, route }) {
                 activeOpacity={0.92}
               >
                 <View style={styles.qrisPickRow}>
-                  <View style={styles.qrisPickLogo}>
+                  <View
+                    style={[
+                      styles.qrisPickLogo,
+                      { backgroundColor: appColors.primarySoft },
+                    ]}
+                  >
                     <QrisProviderLogo
                       providerName={item.providerName}
                       size={48}
@@ -199,8 +211,12 @@ export default function PaymentScreen({ navigation, route }) {
                     />
                   </View>
                   <View style={styles.qrisPickText}>
-                    <Text style={styles.qrisPickTitle}>{item.providerName}</Text>
-                    <Text style={styles.qrisPickSub}>{item.merchantName}</Text>
+                    <Text style={styles.qrisPickTitle}>
+                      {item.label?.trim() || item.providerName}
+                    </Text>
+                    <Text style={styles.qrisPickSub}>
+                      {item.providerName} - {merchantName}
+                    </Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -223,8 +239,14 @@ export default function PaymentScreen({ navigation, route }) {
     return (
       <View style={styles.pad}>
         <Text style={styles.title}>Pembayaran QRIS</Text>
-        <Text style={styles.providerLabel}>{selectedQris?.providerName}</Text>
-        <Text style={styles.merchant}>{selectedQris?.merchantName}</Text>
+        <Text style={[styles.providerLabel, { color: appColors.primary }]}>
+          {selectedQris?.providerName}
+        </Text>
+        <Text style={styles.merchant}>
+          {selectedQris?.label?.trim()
+            ? `${selectedQris.label} - ${merchantName}`
+            : merchantName}
+        </Text>
 
         <View style={styles.qrisMetaCard}>
           <Text style={styles.txnCreatedCaption}>Informasi sesi pembayaran</Text>
@@ -234,6 +256,7 @@ export default function PaymentScreen({ navigation, route }) {
             <Text
               style={[
                 styles.timerDigits,
+                { color: appColors.primary },
                 timerExpired && styles.timerDigitsExpired,
               ]}
               accessibilityLiveRegion="polite"
@@ -265,7 +288,7 @@ export default function PaymentScreen({ navigation, route }) {
           ) : (
             <DummyQrCode
               size={220}
-              seed={selectedQris?.id || `${selectedQris?.merchantName || ''}_${selectedQris?.providerName || ''}`}
+              seed={selectedQris?.id || `${merchantName}_${selectedQris?.providerName || ''}`}
             />
           )}
         </View>

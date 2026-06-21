@@ -2,13 +2,20 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Pencil, Trash2 } from 'lucide-react-native';
 import ProductThumb from './ProductThumb';
 import { colors, cardShadow, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function ProductCard({ product, onEdit, onDelete }) {
+  const { appColors } = useAppSettings();
   const formatPrice = (n) =>
     `Rp ${Number(n).toLocaleString('id-ID')}`;
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+      ]}
+    >
       <View style={styles.thumbOuter}>
         <ProductThumb
           imageUri={product.imageUri}
@@ -18,16 +25,20 @@ export default function ProductCard({ product, onEdit, onDelete }) {
         />
       </View>
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
-        <Text style={styles.price}>{formatPrice(product.price)}</Text>
+        <Text style={[styles.name, { color: appColors.ink }]} numberOfLines={2}>
+          {product.name}
+        </Text>
+        <Text style={[styles.price, { color: appColors.inkMuted }]}>
+          {formatPrice(product.price)}
+        </Text>
       </View>
       <View style={styles.actions}>
         <TouchableOpacity
-          style={styles.iconBtn}
+          style={[styles.iconBtn, { backgroundColor: appColors.iconCircle }]}
           onPress={() => onEdit(product)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Pencil size={18} color={colors.primary} strokeWidth={2.4} />
+          <Pencil size={18} color={appColors.primary} strokeWidth={2.4} />
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.iconBtn, styles.iconBtnDanger]}

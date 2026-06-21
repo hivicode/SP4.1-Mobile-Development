@@ -17,8 +17,10 @@ import ProductThumb from '../components/ProductThumb';
 import { getProducts, getCart, saveCart } from '../storage/storage';
 import { colors, cardShadow, inter } from '../theme/design';
 import { smoothLayout } from '../utils/layoutAnimate';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function CashierScreen({ navigation }) {
+  const { appColors } = useAppSettings();
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [cartExpanded, setCartExpanded] = useState(false);
@@ -146,62 +148,88 @@ export default function CashierScreen({ navigation }) {
   }, []);
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: appColors.pageBg }]}>
       <GreenHeaderTitle title="Kasir" />
-      <View style={styles.body}>
+      <View style={[styles.body, { backgroundColor: appColors.pageBg }]}>
         <ScrollView
-          style={styles.productScroll}
-          contentContainerStyle={styles.productScrollInner}
+          style={[styles.productScroll, { backgroundColor: appColors.pageBg }]}
+          contentContainerStyle={[
+            styles.productScrollInner,
+            products.length === 0 && styles.productEmptyInner,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.hint}>
-            Pilih produk untuk ditambahkan ke keranjang
-          </Text>
+          {products.length > 0 ? (
+            <>
+              <Text style={[styles.hint, { color: appColors.inkMuted }]}>
+                Pilih produk untuk ditambahkan ke keranjang
+              </Text>
 
-          <View style={styles.grid}>
-            {products.map((item, index) => (
-              <View
-                key={item.id}
-                style={[
-                  styles.gridCard,
-                  { width: cardW },
-                  index % 2 === 0 ? styles.gridCardLeft : styles.gridCardRight,
-                ]}
-              >
-                <View style={styles.gridThumbWrap}>
-                  <ProductThumb
-                    imageUri={item.imageUri}
-                    emoji={item.emoji}
-                    productId={item.id}
-                    size={56}
-                  />
-                </View>
-                <Text style={styles.gridName} numberOfLines={2}>
-                  {item.name}
-                </Text>
-                <Text style={styles.gridPrice}>{formatMoney(item.price)}</Text>
-                <TouchableOpacity
-                  style={styles.addBtn}
-                  onPress={() => addProduct(item)}
-                  activeOpacity={0.88}
-                >
-                  <Text style={styles.addBtnText}>+ Tambah</Text>
-                </TouchableOpacity>
+              <View style={styles.grid}>
+                {products.map((item, index) => (
+                  <View
+                    key={item.id}
+                    style={[
+                      styles.gridCard,
+                      {
+                        backgroundColor: appColors.card,
+                        borderColor: appColors.borderLight,
+                      },
+                      { width: cardW },
+                      index % 2 === 0 ? styles.gridCardLeft : styles.gridCardRight,
+                    ]}
+                  >
+                    <View style={styles.gridThumbWrap}>
+                      <ProductThumb
+                        imageUri={item.imageUri}
+                        emoji={item.emoji}
+                        productId={item.id}
+                        size={56}
+                      />
+                    </View>
+                    <Text
+                      style={[styles.gridName, { color: appColors.ink }]}
+                      numberOfLines={2}
+                    >
+                      {item.name}
+                    </Text>
+                    <Text style={[styles.gridPrice, { color: appColors.primary }]}>
+                      {formatMoney(item.price)}
+                    </Text>
+                    <TouchableOpacity
+                      style={[styles.addBtn, { backgroundColor: appColors.primary }]}
+                      onPress={() => addProduct(item)}
+                      activeOpacity={0.88}
+                    >
+                  <Text style={[styles.addBtnText, { color: appColors.onPrimary }]}>
+                    + Tambah
+                  </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-
-          {products.length === 0 ? (
-            <Text style={styles.empty}>Tambah produk di menu Produk dulu.</Text>
-          ) : null}
+            </>
+          ) : (
+            <View style={styles.emptyCenter}>
+              <Text style={[styles.empty, { color: appColors.inkSoft }]}>
+                Tambah produk di menu Produk dulu.
+              </Text>
+            </View>
+          )}
         </ScrollView>
 
         {cart.length > 0 ? (
-          <View style={styles.bottomDock}>
+          <View
+            style={[
+              styles.bottomDock,
+              { backgroundColor: appColors.card, borderTopColor: appColors.borderLight },
+            ]}
+          >
             <View
               style={[
                 styles.cartPanel,
+                { backgroundColor: appColors.card, borderColor: appColors.borderLight },
                 !cartExpanded && styles.cartPanelCollapsed,
               ]}
             >
@@ -217,15 +245,17 @@ export default function CashierScreen({ navigation }) {
                 }
               >
                 <View style={styles.cartHeaderTextCol}>
-                  <Text style={styles.cartSectionTitle}>Keranjang</Text>
-                  <Text style={styles.cartHeaderMeta}>
+                  <Text style={[styles.cartSectionTitle, { color: appColors.ink }]}>
+                    Keranjang
+                  </Text>
+                  <Text style={[styles.cartHeaderMeta, { color: appColors.inkMuted }]}>
                     {totalQty} item · ketuk untuk{' '}
                     {cartExpanded ? 'tutup' : 'ubah qty'}
                   </Text>
                 </View>
                 <View style={styles.cartHeaderActions}>
                   {!cartExpanded ? (
-                    <Text style={styles.cartHeaderTotal}>
+                    <Text style={[styles.cartHeaderTotal, { color: appColors.primary }]}>
                       {formatMoney(total)}
                     </Text>
                   ) : null}
@@ -234,7 +264,7 @@ export default function CashierScreen({ navigation }) {
                   >
                     <ChevronDown
                       size={22}
-                      color={colors.inkMuted}
+                      color={appColors.inkMuted}
                       strokeWidth={2.6}
                     />
                   </Animated.View>
@@ -262,8 +292,10 @@ export default function CashierScreen({ navigation }) {
 
               {cartExpanded ? (
                 <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Total</Text>
-                  <Text style={styles.totalValue}>{formatMoney(total)}</Text>
+                  <Text style={[styles.totalLabel, { color: appColors.ink }]}>Total</Text>
+                  <Text style={[styles.totalValue, { color: appColors.primary }]}>
+                    {formatMoney(total)}
+                  </Text>
                 </View>
               ) : null}
 
@@ -300,6 +332,9 @@ const styles = StyleSheet.create({
   productScrollInner: {
     paddingBottom: 16,
     flexGrow: 1,
+  },
+  productEmptyInner: {
+    justifyContent: 'center',
   },
   bottomDock: {
     flexShrink: 0,
@@ -374,7 +409,11 @@ const styles = StyleSheet.create({
     color: colors.inkSoft,
     textAlign: 'center',
     paddingHorizontal: 24,
-    marginBottom: 16,
+    lineHeight: 22,
+  },
+  emptyCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cartPanel: {
     marginTop: -6,

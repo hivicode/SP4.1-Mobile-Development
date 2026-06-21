@@ -3,8 +3,10 @@ import { CommonActions } from '@react-navigation/native';
 import ButtonPrimary from '../components/ButtonPrimary';
 import ScreenShell from '../components/ScreenShell';
 import { colors, cardShadow, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function ReceiptScreen({ navigation, route }) {
+  const { settings, appColors } = useAppSettings();
   const { transaction, fromHistory = false } = route.params || {};
 
   const formatMoney = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
@@ -41,8 +43,8 @@ export default function ReceiptScreen({ navigation, route }) {
   ) : (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
       <View style={styles.receiptCard}>
-        <Text style={styles.brand}>Kasir UMKM</Text>
-        <Text style={styles.success}>
+        <Text style={styles.brand}>{settings.storeName}</Text>
+        <Text style={[styles.success, { color: appColors.primary }]}>
           {fromHistory ? 'Detail transaksi' : 'Transaksi berhasil'}
         </Text>
         <Text style={styles.id}>{transaction.id}</Text>
@@ -63,7 +65,9 @@ export default function ReceiptScreen({ navigation, route }) {
 
         <View style={styles.rowBetween}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>{formatMoney(transaction.total)}</Text>
+        <Text style={[styles.totalValue, { color: appColors.primary }]}>
+          {formatMoney(transaction.total)}
+        </Text>
         </View>
         <View style={styles.rowBetween}>
           <Text style={styles.meta}>Metode</Text>

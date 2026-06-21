@@ -14,8 +14,10 @@ import { GreenHeaderTitle } from '../components/GreenHeader';
 import { getProducts, saveProducts } from '../storage/storage';
 import { colors, cardShadow, inter } from '../theme/design';
 import { smoothLayout } from '../utils/layoutAnimate';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function ProductScreen({ navigation }) {
+  const { appColors } = useAppSettings();
   const [products, setProducts] = useState([]);
 
   const load = async () => {
@@ -45,17 +47,25 @@ export default function ProductScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: appColors.pageBg }]}>
       <GreenHeaderTitle title="Produk" />
-      <Text style={styles.subtitle}>
+      <Text style={[styles.subtitle, { color: appColors.inkMuted }]}>
         {products.length} produk tersedia
       </Text>
       <FlatList
         data={products}
         keyExtractor={(item, index) => String(item?.id ?? index)}
-        contentContainerStyle={[styles.list, { paddingBottom: 88 }]}
+        contentContainerStyle={[
+          styles.list,
+          products.length === 0 && styles.emptyList,
+          { paddingBottom: 88 },
+        ]}
         ListEmptyComponent={
-          <Text style={styles.empty}>Belum ada produk. Tekan tombol + untuk menambah.</Text>
+          <View style={styles.emptyCenter}>
+            <Text style={[styles.empty, { color: appColors.inkSoft }]}>
+              Belum ada produk. Tekan tombol + untuk menambah.
+            </Text>
+          </View>
         }
         renderItem={({ item }) => (
           <ProductCard
@@ -66,11 +76,18 @@ export default function ProductScreen({ navigation }) {
         )}
       />
       <TouchableOpacity
-        style={[styles.fab, { bottom: 22 }]}
+        style={[
+          styles.fab,
+          {
+            bottom: 22,
+            backgroundColor: appColors.primary,
+            borderColor: appColors.primaryBorder,
+          },
+        ]}
         activeOpacity={0.92}
         onPress={() => navigation.navigate('AddProductScreen', { product: null })}
       >
-        <Plus size={28} color="#FFFFFF" strokeWidth={2.8} />
+        <Plus size={28} color={appColors.onPrimary} strokeWidth={2.8} />
       </TouchableOpacity>
     </View>
   );
@@ -93,10 +110,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
   },
+  emptyList: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   empty: {
     textAlign: 'center',
     color: colors.inkSoft,
-    marginTop: 48,
     paddingHorizontal: 28,
     lineHeight: 22,
   },

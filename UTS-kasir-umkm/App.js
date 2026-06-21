@@ -13,7 +13,7 @@ import {
 } from '@expo-google-fonts/inter';
 import WarungBootSplash from './src/components/WarungBootSplash';
 import AppNavigator from './src/navigation/AppNavigator';
-import { colors } from './src/theme/design';
+import { AppSettingsProvider, useAppSettings } from './src/context/AppSettingsContext';
 import { enableGlobalLayoutAnimations } from './src/utils/layoutAnimate';
 
 enableGlobalLayoutAnimations();
@@ -31,6 +31,44 @@ function applyTextDefaults() {
   TextInput.defaultProps = TextInput.defaultProps || {};
   Text.defaultProps.style = mergeDefaultFontStyle(Text.defaultProps.style);
   TextInput.defaultProps.style = mergeDefaultFontStyle(TextInput.defaultProps.style);
+}
+
+function AppContent({ splashDone }) {
+  const { appColors } = useAppSettings();
+
+  return (
+    <>
+      <View
+        style={[
+          rootStyles.fill,
+          {
+            backgroundColor: splashDone ? appColors.pageBg : appColors.headerGreen,
+          },
+        ]}
+      >
+        {!splashDone ? <WarungBootSplash /> : <AppNavigator />}
+      </View>
+      <StatusBar
+        style="light"
+        backgroundColor={appColors.headerGreen}
+      />
+    </>
+  );
+}
+
+function AppScaffold({ splashDone }) {
+  const { appColors } = useAppSettings();
+
+  return (
+    <SafeAreaProvider
+      style={[
+        rootStyles.shell,
+        { backgroundColor: splashDone ? appColors.pageBg : appColors.headerGreen },
+      ]}
+    >
+      <AppContent splashDone={splashDone} />
+    </SafeAreaProvider>
+  );
 }
 
 export default function App() {
@@ -79,19 +117,9 @@ export default function App() {
   }, [bootstrapOk, fontsLoaded]);
 
   return (
-    <SafeAreaProvider
-      style={[
-        rootStyles.shell,
-        {
-          backgroundColor: splashDone ? colors.pageBg : '#2F5F3D',
-        },
-      ]}
-    >
-      <View style={rootStyles.fill}>
-        {!splashDone ? <WarungBootSplash /> : <AppNavigator />}
-      </View>
-      <StatusBar style="light" backgroundColor={colors.headerGreen} />
-    </SafeAreaProvider>
+    <AppSettingsProvider>
+      <AppScaffold splashDone={splashDone} />
+    </AppSettingsProvider>
   );
 }
 

@@ -8,8 +8,10 @@ import { GreenHeaderTitle } from '../components/GreenHeader';
 import { getQrisAccounts, saveQrisAccounts } from '../storage/storage';
 import { colors, cardShadow, inter } from '../theme/design';
 import { smoothLayout } from '../utils/layoutAnimate';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function QRISScreen({ navigation }) {
+  const { appColors } = useAppSettings();
   const [accounts, setAccounts] = useState([]);
   const insets = useSafeAreaInsets();
 
@@ -40,12 +42,12 @@ export default function QRISScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: appColors.pageBg }]}>
       <GreenHeaderTitle
         title="Kelola QRIS"
         onBack={() => navigation.goBack()}
       />
-      <Text style={styles.subtitle}>
+      <Text style={[styles.subtitle, { color: appColors.inkMuted }]}>
         {accounts.length} akun QRIS
       </Text>
       <FlatList
@@ -56,7 +58,7 @@ export default function QRISScreen({ navigation }) {
           { paddingBottom: insets.bottom + 88 },
         ]}
         ListEmptyComponent={
-          <Text style={styles.empty}>
+          <Text style={[styles.empty, { color: appColors.inkSoft }]}>
             Belum ada akun. Tekan + untuk menambah GoPay, ShopeePay, atau DANA.
           </Text>
         }
@@ -71,13 +73,20 @@ export default function QRISScreen({ navigation }) {
         )}
       />
       <TouchableOpacity
-        style={[styles.fab, { bottom: insets.bottom + 16 }]}
+        style={[
+          styles.fab,
+          {
+            bottom: insets.bottom + 16,
+            backgroundColor: appColors.primary,
+            borderColor: appColors.primaryBorder,
+          },
+        ]}
         activeOpacity={0.92}
         onPress={() =>
           navigation.navigate('AddQRISScreen', { account: null })
         }
       >
-        <Plus size={28} color="#FFFFFF" strokeWidth={2.8} />
+        <Plus size={28} color={appColors.onPrimary} strokeWidth={2.8} />
       </TouchableOpacity>
     </View>
   );

@@ -20,6 +20,7 @@ import { getTransactions } from '../storage/storage';
 import { GreenHeaderHome } from '../components/GreenHeader';
 import FadeSlideIn from '../components/FadeSlideIn';
 import { colors, cardShadow, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 function isSameDay(a, b) {
   return (
@@ -37,6 +38,7 @@ const QUICK_MENU = [
 ];
 
 export default function HomeScreen({ navigation }) {
+  const { appColors } = useAppSettings();
   const [todaySales, setTodaySales] = useState(0);
   const [todayCount, setTodayCount] = useState(0);
   const [yesterdaySales, setYesterdaySales] = useState(0);
@@ -81,40 +83,72 @@ export default function HomeScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.screen}>
-      <GreenHeaderHome userName="Bintang" />
+    <View style={[styles.screen, { backgroundColor: appColors.pageBg }]}>
+      <GreenHeaderHome />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <FadeSlideIn delay={0}>
-          <View style={styles.heroCard}>
-            <TouchableOpacity style={styles.trendChip} activeOpacity={0.85}>
-              <TrendingUp size={18} color={colors.primary} strokeWidth={2.5} />
+          <View
+            style={[
+              styles.heroCard,
+              {
+                backgroundColor: appColors.creamCard,
+                borderColor: appColors.borderLight,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              style={[
+                styles.trendChip,
+                {
+                  backgroundColor: appColors.card,
+                  borderColor: appColors.borderLight,
+                },
+              ]}
+              activeOpacity={0.85}
+            >
+              <TrendingUp size={18} color={appColors.primary} strokeWidth={2.5} />
             </TouchableOpacity>
-            <Text style={styles.heroLabel}>Total Penjualan Hari Ini</Text>
-            <Text style={styles.heroAmount}>{formatMoney(todaySales)}</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{pctLabel}</Text>
+            <Text style={[styles.heroLabel, { color: appColors.inkMuted }]}>
+              Total Penjualan Hari Ini
+            </Text>
+            <Text style={[styles.heroAmount, { color: appColors.primary }]}>
+              {formatMoney(todaySales)}
+            </Text>
+            <View style={[styles.badge, { backgroundColor: appColors.badgeBg }]}>
+              <Text style={[styles.badgeText, { color: appColors.badgeText }]}>
+                {pctLabel}
+              </Text>
             </View>
           </View>
         </FadeSlideIn>
 
         <FadeSlideIn delay={55}>
-          <View style={styles.txSummary}>
-            <View style={styles.mintIcon}>
-              <Banknote size={22} color={colors.primary} strokeWidth={2.3} />
+          <View
+            style={[
+              styles.txSummary,
+              { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+            ]}
+          >
+            <View style={[styles.mintIcon, { backgroundColor: appColors.mintIconBg }]}>
+              <Banknote size={22} color={appColors.primary} strokeWidth={2.3} />
             </View>
             <View style={styles.txSummaryText}>
-              <Text style={styles.txSummaryLabel}>Total Transaksi</Text>
-              <Text style={styles.txSummaryValue}>{todayCount} transaksi</Text>
+              <Text style={[styles.txSummaryLabel, { color: appColors.inkMuted }]}>
+                Total Transaksi
+              </Text>
+              <Text style={[styles.txSummaryValue, { color: appColors.ink }]}>
+                {todayCount} transaksi
+              </Text>
             </View>
           </View>
         </FadeSlideIn>
 
         <FadeSlideIn delay={100}>
-          <Text style={styles.section}>Menu Cepat</Text>
+          <Text style={[styles.section, { color: appColors.ink }]}>Menu Cepat</Text>
         </FadeSlideIn>
         <View style={styles.menuGrid}>
           {QUICK_MENU.map(({ label, Icon, screen }, index) => (
@@ -124,14 +158,24 @@ export default function HomeScreen({ navigation }) {
               style={{ width: tileW }}
             >
               <TouchableOpacity
-                style={styles.menuTile}
+                style={[
+                  styles.menuTile,
+                  { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+                ]}
                 onPress={() => navigation.navigate(screen)}
                 activeOpacity={0.9}
               >
-                <View style={styles.menuIconCircle}>
-                  <Icon size={28} color={colors.primary} strokeWidth={2.2} />
+                <View
+                  style={[
+                    styles.menuIconCircle,
+                    { backgroundColor: appColors.mintIconBg },
+                  ]}
+                >
+                  <Icon size={28} color={appColors.primary} strokeWidth={2.2} />
                 </View>
-                <Text style={styles.menuTileLabel}>{label}</Text>
+                <Text style={[styles.menuTileLabel, { color: appColors.ink }]}>
+                  {label}
+                </Text>
               </TouchableOpacity>
             </FadeSlideIn>
           ))}

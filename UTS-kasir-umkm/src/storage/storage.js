@@ -1,6 +1,12 @@
 import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'kasir_umkm.db';
+export const DEFAULT_STORE_SETTINGS = {
+  storeName: 'Kasir UMKM',
+  ownerName: 'Bintang',
+  logoUri: null,
+  appearanceMode: 'light',
+};
 
 let dbPromise;
 
@@ -30,6 +36,11 @@ function getDb() {
           product_id TEXT PRIMARY KEY NOT NULL,
           data TEXT NOT NULL,
           sort_order INTEGER NOT NULL DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS app_settings (
+          key TEXT PRIMARY KEY NOT NULL,
+          value TEXT NOT NULL
         );
       `);
       return db;
@@ -148,4 +159,36 @@ export async function saveCart(cart) {
 export async function clearCart() {
   const db = await getDb();
   await db.runAsync('DELETE FROM cart_items');
+}
+
+export async function getStoreSettings() {
+  const db = await getDb();
+  const row = await db.getFirstAsync(
+    'SELECT value FROM app_settings WHERE key = ?',
+    ['store_profile']
+  );
+
+  if (!row?.value) return DEFAULT_STORE_SETTINGS;
+
+  try {
+    return {
+      ...DEFAULT_STORE_SETTINGS,
+      ...JSON.parse(row.value),
+    };
+  } catch {
+    return DEFAULT_STORE_SETTINGS;
+  }
+}
+
+export async function saveStoreSettings(settings) {
+  const db = await getDb();
+  const next = {
+    ...DEFAULT_STORE_SETTINGS,
+    ...(settings || {}),
+  };
+  await db.runAsync(
+    'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+    ['store_profile', JSON.stringify(next)]
+  );
+  return next;
 }

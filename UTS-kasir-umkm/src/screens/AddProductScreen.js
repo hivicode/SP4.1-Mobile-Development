@@ -17,6 +17,7 @@ import ScreenShell from '../components/ScreenShell';
 import ProductThumb from '../components/ProductThumb';
 import { getProducts, saveProducts } from '../storage/storage';
 import { colors, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 const pickerOptions = {
   mediaTypes: ['images'],
@@ -35,6 +36,7 @@ function assetToPersistUri(asset) {
 }
 
 export default function AddProductScreen({ navigation, route }) {
+  const { appColors } = useAppSettings();
   const editing = route.params?.product;
   const [name, setName] = useState(editing?.name ?? '');
   const [price, setPrice] = useState(
@@ -124,8 +126,16 @@ export default function AddProductScreen({ navigation, route }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          <Text style={styles.label}>Foto produk</Text>
-          <View style={styles.imageBlock}>
+          <Text style={[styles.label, { color: appColors.ink }]}>Foto produk</Text>
+          <View
+            style={[
+              styles.imageBlock,
+              {
+                backgroundColor: appColors.mintIconBg,
+                borderColor: appColors.borderLight,
+              },
+            ]}
+          >
             {imageUri ? (
               <Image
                 source={{ uri: imageUri }}
@@ -140,7 +150,7 @@ export default function AddProductScreen({ navigation, route }) {
                   productId={idForPreview}
                   size={96}
                 />
-                <Text style={styles.previewHint}>
+                <Text style={[styles.previewHint, { color: appColors.inkMuted }]}>
                   {emojiIcon.trim() ? 'Tap galeri/kamera untuk pakai foto' : 'Belum ada foto'}
                 </Text>
               </View>
@@ -148,18 +158,36 @@ export default function AddProductScreen({ navigation, route }) {
           </View>
           <View style={styles.pickRow}>
             <TouchableOpacity
-              style={[styles.pickBtn, styles.pickBtnPrimary]}
+              style={[
+                styles.pickBtn,
+                styles.pickBtnPrimary,
+                {
+                  backgroundColor: appColors.primarySoft,
+                  borderColor: appColors.primaryBorder,
+                },
+              ]}
               onPress={pickFromLibrary}
               activeOpacity={0.88}
             >
-              <Text style={styles.pickBtnText}>Galeri</Text>
+              <Text style={[styles.pickBtnText, { color: appColors.primary }]}>
+                Galeri
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.pickBtn, styles.pickBtnPrimary]}
+              style={[
+                styles.pickBtn,
+                styles.pickBtnPrimary,
+                {
+                  backgroundColor: appColors.primarySoft,
+                  borderColor: appColors.primaryBorder,
+                },
+              ]}
               onPress={takePhoto}
               activeOpacity={0.88}
             >
-              <Text style={styles.pickBtnText}>Kamera</Text>
+              <Text style={[styles.pickBtnText, { color: appColors.primary }]}>
+                Kamera
+              </Text>
             </TouchableOpacity>
             {imageUri ? (
               <TouchableOpacity
@@ -172,9 +200,16 @@ export default function AddProductScreen({ navigation, route }) {
             ) : null}
           </View>
 
-          <Text style={styles.label}>Emoji ikon</Text>
+          <Text style={[styles.label, { color: appColors.ink }]}>Emoji ikon</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: appColors.card,
+                borderColor: appColors.borderLight,
+                color: appColors.ink,
+              },
+            ]}
             placeholder="Misal ☕ atau 🍜"
             placeholderTextColor={colors.inkSoft}
             value={emojiIcon}
@@ -182,17 +217,31 @@ export default function AddProductScreen({ navigation, route }) {
             maxLength={32}
           />
 
-          <Text style={styles.label}>Nama produk</Text>
+          <Text style={[styles.label, { color: appColors.ink }]}>Nama produk</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: appColors.card,
+                borderColor: appColors.borderLight,
+                color: appColors.ink,
+              },
+            ]}
             placeholder="Contoh: Kopi Susu"
             placeholderTextColor={colors.inkSoft}
             value={name}
             onChangeText={setName}
           />
-          <Text style={styles.label}>Harga (Rp)</Text>
+          <Text style={[styles.label, { color: appColors.ink }]}>Harga (Rp)</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: appColors.card,
+                borderColor: appColors.borderLight,
+                color: appColors.ink,
+              },
+            ]}
             placeholder="15000"
             placeholderTextColor={colors.inkSoft}
             keyboardType="decimal-pad"

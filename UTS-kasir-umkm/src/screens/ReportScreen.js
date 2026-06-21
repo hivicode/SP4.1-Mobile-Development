@@ -10,6 +10,7 @@ import { GreenHeaderTitle } from '../components/GreenHeader';
 import { getTransactions } from '../storage/storage';
 import { colors, cardShadow, inter } from '../theme/design';
 import { smoothLayout } from '../utils/layoutAnimate';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 function isSameDay(a, b) {
   return (
@@ -60,6 +61,7 @@ const SEGMENTS = [
 ];
 
 export default function ReportScreen({ navigation }) {
+  const { appColors } = useAppSettings();
   const [transactions, setTransactions] = useState([]);
   const [segment, setSegment] = useState('today');
 
@@ -90,24 +92,42 @@ export default function ReportScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: appColors.pageBg }]}>
       <GreenHeaderTitle title="Laporan" />
 
       <View style={styles.segmentOuter}>
-        <View style={styles.segmentBar}>
+        <View
+          style={[
+            styles.segmentBar,
+            { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+          ]}
+        >
           {SEGMENTS.map(({ key, label }) => {
             const on = segment === key;
             return (
               <TouchableOpacity
                 key={key}
-                style={[styles.segBtn, on && styles.segBtnOn]}
+                style={[
+                  styles.segBtn,
+                  on && styles.segBtnOn,
+                  on && { backgroundColor: appColors.primary },
+                ]}
                 onPress={() => {
                   smoothLayout();
                   setSegment(key);
                 }}
                 activeOpacity={0.85}
               >
-                <Text style={[styles.segText, on && styles.segTextOn]}>{label}</Text>
+                <Text
+                  style={[
+                    styles.segText,
+                    { color: appColors.inkMuted },
+                    on && styles.segTextOn,
+                    on && { color: appColors.onPrimary },
+                  ]}
+                >
+                  {label}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -115,33 +135,58 @@ export default function ReportScreen({ navigation }) {
       </View>
 
       <View style={styles.summary}>
-        <View style={[styles.summaryCard, styles.summaryCardLeft]}>
-          <View style={styles.iconMint}>
-            <TrendingUp size={22} color={colors.primary} strokeWidth={2.4} />
+        <View
+          style={[
+            styles.summaryCard,
+            styles.summaryCardLeft,
+            { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+          ]}
+        >
+          <View style={[styles.iconMint, { backgroundColor: appColors.mintIconBg }]}>
+            <TrendingUp size={22} color={appColors.primary} strokeWidth={2.4} />
           </View>
-          <Text style={styles.sumLabel}>Total Pendapatan</Text>
-          <Text style={styles.sumValue}>{formatMoney(revenue)}</Text>
+          <Text style={[styles.sumLabel, { color: appColors.inkMuted }]}>Total Pendapatan</Text>
+          <Text style={[styles.sumValue, { color: appColors.primary }]}>
+            {formatMoney(revenue)}
+          </Text>
         </View>
-        <View style={[styles.summaryCard, styles.summaryCardRight]}>
-          <View style={styles.iconMint}>
-            <Banknote size={22} color={colors.primary} strokeWidth={2.4} />
+        <View
+          style={[
+            styles.summaryCard,
+            styles.summaryCardRight,
+            { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+          ]}
+        >
+          <View style={[styles.iconMint, { backgroundColor: appColors.mintIconBg }]}>
+            <Banknote size={22} color={appColors.primary} strokeWidth={2.4} />
           </View>
-          <Text style={styles.sumLabel}>Total Transaksi</Text>
-          <Text style={[styles.sumValue, styles.sumBlack]}>{filtered.length}</Text>
+          <Text style={[styles.sumLabel, { color: appColors.inkMuted }]}>Total Transaksi</Text>
+          <Text style={[styles.sumValue, { color: appColors.ink }]}>{filtered.length}</Text>
         </View>
       </View>
 
-      <Text style={styles.section}>Riwayat Transaksi</Text>
+      <Text style={[styles.section, { color: appColors.ink }]}>Riwayat Transaksi</Text>
       <FlatList
         data={filtered}
         keyExtractor={(item, index) => String(item?.id ?? index)}
-        contentContainerStyle={[styles.list, { paddingBottom: 28 }]}
+        contentContainerStyle={[
+          styles.list,
+          filtered.length === 0 && styles.emptyList,
+          { paddingBottom: 28 },
+        ]}
         ListEmptyComponent={
-          <Text style={styles.empty}>Belum ada transaksi untuk filter ini.</Text>
+          <View style={styles.emptyCenter}>
+            <Text style={[styles.empty, { color: appColors.inkSoft }]}>
+              Belum ada transaksi untuk filter ini.
+            </Text>
+          </View>
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.txCard}
+            style={[
+              styles.txCard,
+              { backgroundColor: appColors.card, borderColor: appColors.borderLight },
+            ]}
             activeOpacity={0.86}
             onPress={() =>
               navigation.navigate('ReceiptScreen', {
@@ -150,14 +195,23 @@ export default function ReportScreen({ navigation }) {
               })
             }
           >
-            <View style={styles.iconMintSmall}>
-              <Receipt size={20} color={colors.primary} strokeWidth={2.3} />
+            <View
+              style={[
+                styles.iconMintSmall,
+                { backgroundColor: appColors.mintIconBg },
+              ]}
+            >
+              <Receipt size={20} color={appColors.primary} strokeWidth={2.3} />
             </View>
             <View style={styles.txMid}>
-              <Text style={styles.txId}>#{item.id}</Text>
-              <Text style={styles.txSub}>{txLineSubtitle(item)}</Text>
+              <Text style={[styles.txId, { color: appColors.ink }]}>#{item.id}</Text>
+              <Text style={[styles.txSub, { color: appColors.inkMuted }]}>
+                {txLineSubtitle(item)}
+              </Text>
             </View>
-            <Text style={styles.txAmt}>{formatMoney(item.total)}</Text>
+            <Text style={[styles.txAmt, { color: appColors.primary }]}>
+              {formatMoney(item.total)}
+            </Text>
           </TouchableOpacity>
         )}
       />
@@ -254,11 +308,19 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 16,
   },
+  emptyList: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  emptyCenter: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   empty: {
     textAlign: 'center',
     color: colors.inkSoft,
-    marginTop: 28,
     paddingHorizontal: 24,
+    lineHeight: 22,
   },
   txCard: {
     flexDirection: 'row',

@@ -13,29 +13,32 @@ import ButtonPrimary from '../components/ButtonPrimary';
 import ScreenShell from '../components/ScreenShell';
 import { getQrisAccounts, saveQrisAccounts } from '../storage/storage';
 import { colors, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 const PROVIDERS = ['GoPay', 'ShopeePay', 'DANA'];
 
 export default function AddQRISScreen({ navigation, route }) {
+  const { settings, appColors } = useAppSettings();
   const editing = route.params?.account;
   const [providerName, setProviderName] = useState(
     editing?.providerName ?? 'GoPay'
   );
-  const [merchantName, setMerchantName] = useState(editing?.merchantName ?? '');
+  const [label, setLabel] = useState(editing?.label ?? '');
   const [qrImageUrl, setQrImageUrl] = useState(editing?.qrImageUrl ?? '');
+  const merchantName = settings.storeName || 'Kasir UMKM';
 
   const save = async () => {
-    const merchant = merchantName.trim();
-    if (!merchant) return;
     const list = await getQrisAccounts();
     const url = qrImageUrl.trim();
+    const cleanLabel = label.trim();
     if (editing) {
       const next = list.map((a) =>
         a.id === editing.id
           ? {
               ...a,
               providerName,
-              merchantName: merchant,
+              merchantName,
+              label: cleanLabel,
               qrImageUrl: url,
             }
           : a
@@ -48,7 +51,8 @@ export default function AddQRISScreen({ navigation, route }) {
         {
           id,
           providerName,
-          merchantName: merchant,
+          merchantName,
+          label: cleanLabel,
           qrImageUrl: url,
         },
       ]);
@@ -63,21 +67,31 @@ export default function AddQRISScreen({ navigation, route }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          <Text style={styles.label}>Penyedia</Text>
+          <Text style={[styles.label, { color: appColors.ink }]}>Penyedia</Text>
           <View style={styles.row}>
             {PROVIDERS.map((p) => (
               <TouchableOpacity
                 key={p}
                 style={[
                   styles.chip,
+                  {
+                    backgroundColor: appColors.card,
+                    borderColor: appColors.borderLight,
+                  },
                   providerName === p && styles.chipActive,
+                  providerName === p && {
+                    borderColor: appColors.primary,
+                    backgroundColor: appColors.primarySoft,
+                  },
                 ]}
                 onPress={() => setProviderName(p)}
               >
                 <Text
                   style={[
                     styles.chipText,
+                    { color: appColors.inkMuted },
                     providerName === p && styles.chipTextActive,
+                    providerName === p && { color: appColors.primary },
                   ]}
                 >
                   {p}
@@ -86,32 +100,60 @@ export default function AddQRISScreen({ navigation, route }) {
             ))}
           </View>
 
-          <Text style={styles.label}>Nama merchant</Text>
+          <Text style={[styles.label, { color: appColors.ink }]}>Merchant</Text>
+          <View
+            style={[
+              styles.readOnlyBox,
+              {
+                backgroundColor: appColors.card,
+                borderColor: appColors.borderLight,
+              },
+            ]}
+          >
+            <Text style={[styles.readOnlyText, { color: appColors.ink }]}>
+              {merchantName}
+            </Text>
+          </View>
+
+          <Text style={[styles.label, { color: appColors.ink }]}>Label QRIS (opsional)</Text>
           <TextInput
-            style={styles.input}
-            placeholder="Warung Bu Sri"
+            style={[
+              styles.input,
+              {
+                backgroundColor: appColors.card,
+                borderColor: appColors.borderLight,
+                color: appColors.ink,
+              },
+            ]}
+            placeholder="Contoh: QRIS utama"
             placeholderTextColor={colors.inkSoft}
-            value={merchantName}
-            onChangeText={setMerchantName}
+            value={label}
+            onChangeText={setLabel}
           />
 
-          <Text style={styles.label}>URL gambar QR (opsional)</Text>
+          <Text style={[styles.label, { color: appColors.ink }]}>URL gambar QR (opsional)</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: appColors.card,
+                borderColor: appColors.borderLight,
+                color: appColors.ink,
+              },
+            ]}
             placeholder="https://..."
             placeholderTextColor={colors.inkSoft}
             autoCapitalize="none"
             value={qrImageUrl}
             onChangeText={setQrImageUrl}
           />
-          <Text style={styles.hint}>
+          <Text style={[styles.hint, { color: appColors.inkSoft }]}>
             Kosongkan untuk placeholder. Gunakan URL gambar QR yang valid.
           </Text>
 
           <ButtonPrimary
             title={editing ? 'Simpan perubahan' : 'Simpan akun'}
             onPress={save}
-            disabled={!merchantName.trim()}
             style={styles.saveBtn}
           />
         </ScrollView>
@@ -173,6 +215,17 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1,
     borderColor: colors.borderLight,
+  },
+  readOnlyBox: {
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+  },
+  readOnlyText: {
+    ...inter.extraBold,
+    fontSize: 16,
   },
   hint: {
     fontSize: 12,

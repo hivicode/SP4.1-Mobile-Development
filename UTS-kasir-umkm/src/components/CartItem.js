@@ -1,12 +1,14 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ProductThumb from './ProductThumb';
 import { colors, inter } from '../theme/design';
+import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
+  const { appColors } = useAppSettings();
   const formatPrice = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
 
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, { borderBottomColor: appColors.borderLight }]}>
       <View style={styles.thumbCol}>
         <ProductThumb
           imageUri={item.imageUri}
@@ -16,17 +18,37 @@ export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
         />
       </View>
       <View style={styles.left}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.unit}>{formatPrice(item.price)} × {item.qty}</Text>
+        <Text style={[styles.name, { color: appColors.ink }]}>{item.name}</Text>
+        <Text style={[styles.unit, { color: appColors.inkMuted }]}>
+          {formatPrice(item.price)} x {item.qty}
+        </Text>
       </View>
       <View style={styles.right}>
         <View style={styles.qtyRow}>
-          <TouchableOpacity style={styles.qtyBtn} onPress={() => onDecrease(item.productId)}>
-            <Text style={styles.qtyBtnText}>−</Text>
+          <TouchableOpacity
+            style={[
+              styles.qtyBtn,
+              {
+                backgroundColor: appColors.primarySoft,
+                borderColor: appColors.borderLight,
+              },
+            ]}
+            onPress={() => onDecrease(item.productId)}
+          >
+            <Text style={[styles.qtyBtnText, { color: appColors.primary }]}>-</Text>
           </TouchableOpacity>
-          <Text style={styles.qty}>{item.qty}</Text>
-          <TouchableOpacity style={styles.qtyBtn} onPress={() => onIncrease(item.productId)}>
-            <Text style={styles.qtyBtnText}>+</Text>
+          <Text style={[styles.qty, { color: appColors.ink }]}>{item.qty}</Text>
+          <TouchableOpacity
+            style={[
+              styles.qtyBtn,
+              {
+                backgroundColor: appColors.primarySoft,
+                borderColor: appColors.borderLight,
+              },
+            ]}
+            onPress={() => onIncrease(item.productId)}
+          >
+            <Text style={[styles.qtyBtnText, { color: appColors.primary }]}>+</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.remove} onPress={() => onRemove(item.productId)}>
             <Text style={styles.removeText}>Hapus</Text>
@@ -75,7 +97,6 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -84,7 +105,6 @@ const styles = StyleSheet.create({
   qtyBtnText: {
     ...inter.bold,
     fontSize: 18,
-    color: colors.primary,
   },
   qty: {
     ...inter.bold,
