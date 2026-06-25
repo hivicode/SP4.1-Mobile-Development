@@ -396,7 +396,7 @@ function NotesScreen({ session }) {
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View>
-            <Text style={styles.kicker}>P12 Supabase</Text>
+            <Text style={styles.kicker}>Hai, Selamat Datang</Text>
             <Text style={styles.title}>Catatan Saya</Text>
           </View>
           <View style={styles.headerActions}>
@@ -404,7 +404,7 @@ function NotesScreen({ session }) {
             <IconButton icon={LogOut} label="Keluar" onPress={signOut} />
           </View>
         </View>
-        <Text style={styles.userText}>{email}</Text>
+        <Text style={styles.userText}>{session.user.email}</Text>
         <View style={styles.statPill}>
           <BookOpenText size={16} color={colors.primaryDark} />
           <Text style={styles.statText}>{headerStats}</Text>
