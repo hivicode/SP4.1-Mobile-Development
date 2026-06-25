@@ -1,0 +1,10 @@
+
+> p12-notes-supabase@1.0.0 start
+> expo start --localhost
+
+env: load .env.local
+env: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_KEY
+Starting project at C:\Users\PR 17\Documents\1124102166\SP4.1-Mobile-Development\P12
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.

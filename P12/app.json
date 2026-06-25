@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "P12 Notes",
+    "slug": "p12-notes-supabase",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "platforms": ["ios", "android", "web"]
+  }
+}
