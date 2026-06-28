@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { colors, inter } from '../theme/design';
+import { colors, inter, cardShadow } from '../theme/design';
 import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function ButtonPrimary({
@@ -17,14 +17,12 @@ export default function ButtonPrimary({
       style={[
         styles.btn,
         isOutline && styles.outline,
-        !isOutline && !isAccent && styles.filled,
-        !isOutline && isAccent && styles.accentFilled,
-        !isOutline && !isAccent && { backgroundColor: appColors.primary },
+        !isOutline && !isAccent && { backgroundColor: '#A3E635' },
         !isOutline && isAccent && { backgroundColor: appColors.accent },
         isOutline && {
-          backgroundColor: appColors.card,
-          borderWidth: 1,
-          borderColor: appColors.borderLight,
+          backgroundColor: '#FFFFFF',
+          borderWidth: 2.2,
+          borderColor: '#0F172A',
         },
         disabled && styles.disabled,
         style,
@@ -36,9 +34,8 @@ export default function ButtonPrimary({
       <Text
         style={[
           styles.label,
-          !isOutline && !isAccent && { color: appColors.onPrimary },
-          isOutline && styles.labelOutline,
-          isOutline && { color: appColors.primary },
+          !isOutline && !isAccent && { color: '#0F172A' },
+          isOutline && { color: '#0F172A' },
           isAccent && !isOutline && { color: appColors.onSecondary },
         ]}
       >
@@ -55,6 +52,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   filled: {
     backgroundColor: colors.primary,

@@ -80,14 +80,16 @@ export default function ProductScreen({ navigation }) {
           styles.fab,
           {
             bottom: 22,
-            backgroundColor: appColors.primary,
-            borderColor: appColors.primaryBorder,
+            backgroundColor: '#A3E635',
+            borderColor: '#0F172A',
+            borderWidth: 2.2,
+            ...cardShadow(),
           },
         ]}
         activeOpacity={0.92}
         onPress={() => navigation.navigate('AddProductScreen', { product: null })}
       >
-        <Plus size={28} color={appColors.onPrimary} strokeWidth={2.8} />
+        <Plus size={28} color="#0F172A" strokeWidth={2.8} />
       </TouchableOpacity>
     </View>
   );

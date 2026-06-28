@@ -1,7 +1,8 @@
 import { Image, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ChevronLeft, Store } from 'lucide-react-native';
-import { colors, inter } from '../theme/design';
+import { colors, inter, cardShadow } from '../theme/design';
 import { useAppSettings } from '../context/AppSettingsContext';
 
 function contentPaddingTop(insets, extraBreathing) {
@@ -11,13 +12,34 @@ function contentPaddingTop(insets, extraBreathing) {
   return top + extra;
 }
 
+function getGradientColors(title) {
+  const t = String(title || '').toLowerCase();
+  if (t.includes('kasir')) {
+    return ['#60A5FA', colors.pageBg]; // sky blue to page bg
+  }
+  if (t.includes('transaksi') || t.includes('riwayat') || t.includes('struk') || t.includes('detail')) {
+    return ['#F472B6', colors.pageBg]; // pink to page bg
+  }
+  if (t.includes('produk') || t.includes('barang')) {
+    return ['#C084FC', colors.pageBg]; // purple to page bg
+  }
+  if (t.includes('profil') || t.includes('umkm') || t.includes('pengaturan')) {
+    return ['#FBBF24', colors.pageBg]; // orange/yellow to page bg
+  }
+  // Default is neon green (like calendar!)
+  return ['#4ADE80', colors.pageBg]; // lime green to page bg
+}
+
 export function GreenHeaderHome() {
-  const { settings, appColors } = useAppSettings();
+  const { settings } = useAppSettings();
   const insets = useSafeAreaInsets();
   const pt = contentPaddingTop(insets, 14);
 
   return (
-    <View style={[styles.shell, { paddingTop: pt, backgroundColor: appColors.headerGreen }]}>
+    <LinearGradient
+      colors={['#4ADE80', colors.pageBg]}
+      style={[styles.shell, { paddingTop: pt }]}
+    >
       <View style={styles.homeRow}>
         <View style={styles.homeText}>
           <Text style={styles.welcome} numberOfLines={1}>
@@ -40,52 +62,48 @@ export function GreenHeaderHome() {
               resizeMode="cover"
             />
           ) : (
-            <Store color={appColors.primary} size={26} strokeWidth={2.4} />
+            <Store color="#0F172A" size={26} strokeWidth={2.4} />
           )}
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 export function GreenHeaderTitle({ title, onBack }) {
-  const { appColors } = useAppSettings();
   const insets = useSafeAreaInsets();
   const pt = contentPaddingTop(insets, 12);
+  const gradientColors = getGradientColors(title);
 
   return (
-    <View
-      style={[
-        styles.shell,
-        styles.shellTight,
-        { paddingTop: pt, backgroundColor: appColors.headerGreen },
-      ]}
+    <LinearGradient
+      colors={gradientColors}
+      style={[styles.shell, styles.shellTight, { paddingTop: pt }]}
     >
-      {onBack ? (
-        <View style={styles.titleRow}>
+      <View style={styles.titleContainer}>
+        {onBack ? (
           <TouchableOpacity
             onPress={onBack}
+            style={styles.backButtonCircle}
+            activeOpacity={0.85}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            style={styles.backHit}
           >
-            <ChevronLeft color="#FFFFFF" size={28} strokeWidth={2.5} />
+            <ChevronLeft color="#0F172A" size={22} strokeWidth={3} />
           </TouchableOpacity>
-          <Text style={styles.screenTitleNext} numberOfLines={1}>
-            {title}
-          </Text>
-        </View>
-      ) : (
-        <Text style={styles.screenTitle} numberOfLines={1}>
+        ) : null}
+        
+        <Text style={styles.centeredScreenTitle} numberOfLines={1}>
           {title}
         </Text>
-      )}
-    </View>
+        
+        {onBack ? <View style={{ width: 38 }} /> : null}
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   shell: {
-    backgroundColor: colors.headerGreen,
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
@@ -93,14 +111,14 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   welcome: {
-    ...inter.semiBold,
-    color: 'rgba(255,255,255,0.92)',
+    ...inter.medium,
+    color: '#1E293B',
     fontSize: 14,
     marginBottom: 6,
   },
   halo: {
     ...inter.extraBold,
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontSize: 26,
     letterSpacing: -0.6,
   },
@@ -120,6 +138,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   logoTileUploaded: {
     backgroundColor: 'transparent',
@@ -128,27 +149,29 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  titleRow: {
+  titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
-  backHit: {
-    marginRight: 6,
-    marginLeft: -4,
+  backButtonCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#0F172A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...cardShadow(),
   },
-  screenTitle: {
-    ...inter.extraBold,
-    alignSelf: 'stretch',
-    textAlign: 'left',
-    color: '#FFFFFF',
-    fontSize: 24,
-    letterSpacing: -0.4,
-  },
-  screenTitleNext: {
+  centeredScreenTitle: {
     ...inter.extraBold,
     flex: 1,
-    color: '#FFFFFF',
-    fontSize: 24,
+    textAlign: 'center',
+    color: '#0F172A',
+    fontSize: 20,
     letterSpacing: -0.4,
   },
 });

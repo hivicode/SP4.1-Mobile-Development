@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  TextInput,
 } from 'react-native';
 import ButtonPrimary from '../components/ButtonPrimary';
 import DummyQrCode from '../components/DummyQrCode';
 import QrisProviderLogo from '../components/QrisProviderLogo';
 import ScreenShell from '../components/ScreenShell';
+import { GreenHeaderTitle } from '../components/GreenHeader';
 import {
   addTransaction,
   clearCart,
@@ -54,6 +56,7 @@ export default function PaymentScreen({ navigation, route }) {
   );
   const [qrisDeadlineMs, setQrisDeadlineMs] = useState(null);
   const [qrisSecondsLeft, setQrisSecondsLeft] = useState(null);
+  const [cashReceived, setCashReceived] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -79,7 +82,7 @@ export default function PaymentScreen({ navigation, route }) {
   const formatMoney = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
   const merchantName = settings.storeName || 'Kasir UMKM';
 
-  const finishPayment = async (methodLabel) => {
+  const finishPayment = async (methodLabel, extraTxData = {}) => {
     const safeItems = Array.isArray(cartItems) ? cartItems : [];
     const tx = {
       id: makeTxId(),
@@ -87,6 +90,7 @@ export default function PaymentScreen({ navigation, route }) {
       total: cartTotal,
       method: methodLabel,
       date: new Date().toISOString(),
+      ...extraTxData,
     };
     await addTransaction(tx);
     await clearCart();
@@ -94,7 +98,18 @@ export default function PaymentScreen({ navigation, route }) {
   };
 
   const onCash = () => {
-    finishPayment('Cash');
+    setStep('cashPay');
+  };
+
+  const onCompleteCash = async () => {
+    const cashReceivedNum = parseFloat(cashReceived.replace(/,/g, '.')) || 0;
+    const change = Math.max(0, cashReceivedNum - cartTotal);
+    if (cashReceivedNum < cartTotal) return;
+
+    await finishPayment('Cash', {
+      cashReceived: cashReceivedNum,
+      change: change,
+    });
   };
 
   const onPickQris = (account) => {
@@ -151,6 +166,55 @@ export default function PaymentScreen({ navigation, route }) {
             title="Batal"
             variant="outline"
             onPress={() => navigation.goBack()}
+            style={styles.cancel}
+          />
+        </View>
+      );
+    }
+
+    if (step === 'cashPay') {
+      const cashReceivedNum = parseFloat(cashReceived.replace(/,/g, '.')) || 0;
+      const change = Math.max(0, cashReceivedNum - cartTotal);
+      const cashIsEnough = cashReceivedNum >= cartTotal;
+
+      return (
+        <View style={styles.pad}>
+          <Text style={styles.title}>Pembayaran Cash</Text>
+          <Text style={[styles.totalHint, { color: appColors.primary }]}>
+            Total {formatMoney(cartTotal)}
+          </Text>
+
+          <Text style={styles.label}>Uang Diterima (Rp)</Text>
+          <TextInput
+            style={[styles.input, { borderColor: '#0F172A', borderWidth: 2.2 }]}
+            placeholder="Contoh: 50000"
+            placeholderTextColor={colors.inkSoft}
+            keyboardType="numeric"
+            value={cashReceived}
+            onChangeText={setCashReceived}
+            autoFocus
+          />
+
+          <View style={styles.changeRow}>
+            <Text style={styles.changeLabel}>Kembalian</Text>
+            <Text style={[styles.changeValue, { color: change > 0 ? '#10B981' : appColors.ink }]}>
+              {formatMoney(change)}
+            </Text>
+          </View>
+
+          <ButtonPrimary
+            title="Selesai"
+            onPress={onCompleteCash}
+            disabled={!cashIsEnough}
+            style={styles.btn}
+          />
+          <ButtonPrimary
+            title="Kembali"
+            variant="outline"
+            onPress={() => {
+              setStep('method');
+              setCashReceived('');
+            }}
             style={styles.cancel}
           />
         </View>
@@ -232,9 +296,7 @@ export default function PaymentScreen({ navigation, route }) {
     }
 
     const qrUrl = selectedQris?.qrImageUrl?.trim() || '';
-
-    const timerExpired =
-      qrisSecondsLeft != null && qrisSecondsLeft <= 0;
+    const timerExpired = qrisSecondsLeft != null && qrisSecondsLeft <= 0;
 
     return (
       <View style={styles.pad}>
@@ -311,8 +373,25 @@ export default function PaymentScreen({ navigation, route }) {
     );
   };
 
+  const getHeaderTitle = () => {
+    if (step === 'cashPay') return 'Pembayaran Tunai';
+    if (step === 'qrisPay') return 'Pembayaran QRIS';
+    if (step === 'qrisPick') return 'Pilih Akun QRIS';
+    return 'Pembayaran';
+  };
+
   return (
     <ScreenShell>
+      <GreenHeaderTitle
+        title={getHeaderTitle()}
+        onBack={() => {
+          if (step !== 'method') {
+            setStep('method');
+          } else {
+            navigation.goBack();
+          }
+        }}
+      />
       <View style={styles.shellInner}>{renderBody()}</View>
     </ScreenShell>
   );
@@ -362,9 +441,9 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.07, 8),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   methodTitle: {
     ...inter.extraBold,
@@ -388,9 +467,9 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.06, 5),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   qrisPickRow: {
     flexDirection: 'row',
@@ -403,8 +482,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginRight: 14,
     backgroundColor: colors.primarySoft,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderWidth: 2,
+    borderColor: '#0F172A',
   },
   qrisPickText: {
     flex: 1,
@@ -436,9 +515,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.06, 8),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   txnCreatedCaption: {
     ...inter.semiBold,
@@ -456,8 +535,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   timerBlock: {
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderTopWidth: 2.2,
+    borderTopColor: '#0F172A',
     paddingTop: 12,
   },
   timerCaption: {
@@ -496,9 +575,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 18,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.09, 10),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   qrImage: {
     width: 220,
@@ -521,5 +600,43 @@ const styles = StyleSheet.create({
     color: colors.ink,
     textAlign: 'center',
     marginBottom: 16,
+  },
+  label: {
+    ...inter.bold,
+    fontSize: 14,
+    color: colors.ink,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.ink,
+    marginBottom: 18,
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+  },
+  changeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingTop: 10,
+    borderTopWidth: 2.2,
+    borderTopColor: '#0F172A',
+  },
+  changeLabel: {
+    ...inter.extraBold,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  changeValue: {
+    ...inter.extraBold,
+    fontSize: 24,
+  },
+  btn: {
+    marginTop: 8,
   },
 });

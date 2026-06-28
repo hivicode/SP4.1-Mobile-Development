@@ -7,9 +7,11 @@ import {
   View,
   Dimensions,
   Animated,
+  Alert,
 } from 'react-native';
-import { ChevronDown } from 'lucide-react-native';
+import { ChevronDown, Scan } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import CartItem from '../components/CartItem';
 import ButtonPrimary from '../components/ButtonPrimary';
 import { GreenHeaderTitle } from '../components/GreenHeader';
@@ -25,6 +27,8 @@ export default function CashierScreen({ navigation }) {
   const [cart, setCart] = useState([]);
   const [cartExpanded, setCartExpanded] = useState(false);
   const chevronSpin = useRef(new Animated.Value(1)).current;
+  const [scanning, setScanning] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
     if (cart.length === 0) {
@@ -134,6 +138,40 @@ export default function CashierScreen({ navigation }) {
     outputRange: ['0deg', '180deg'],
   });
 
+  const startScanning = async () => {
+    if (!permission || !permission.granted) {
+      const res = await requestPermission();
+      if (!res.granted) {
+        Alert.alert(
+          'Izin kamera',
+          'Aplikasi memerlukan izin kamera untuk memindai barcode.'
+        );
+        return;
+      }
+    }
+    setScanning(true);
+  };
+
+  const onBarcodeScanned = (scannedCode) => {
+    const code = String(scannedCode).trim();
+    if (!code) return;
+
+    const found = products.find(
+      (p) => p.barcode && String(p.barcode).trim() === code
+    );
+    if (found) {
+      addProduct(found);
+      setScanning(false);
+      Alert.alert('Sukses', `Berhasil menambahkan ${found.name} ke keranjang.`);
+    } else {
+      setScanning(false);
+      Alert.alert(
+        'Tidak ditemukan',
+        `Produk dengan barcode "${code}" tidak ditemukan.`
+      );
+    }
+  };
+
   const checkout = () => {
     if (cart.length === 0) return;
     navigation.navigate('PaymentScreen', {
@@ -146,6 +184,27 @@ export default function CashierScreen({ navigation }) {
     const h = Dimensions.get('window').height;
     return Math.min(Math.round(h * 0.42), 320);
   }, []);
+
+  if (scanning) {
+    return (
+      <View style={StyleSheet.absoluteFillObject}>
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          onBarcodeScanned={({ data }) => {
+            onBarcodeScanned(data);
+          }}
+        />
+        <View style={styles.scanOverlay}>
+          <Text style={styles.scanText}>Arahkan kamera ke Barcode</Text>
+          <ButtonPrimary
+            title="Batal"
+            onPress={() => setScanning(false)}
+            style={styles.scanCancel}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: appColors.pageBg }]}>
@@ -162,9 +221,19 @@ export default function CashierScreen({ navigation }) {
         >
           {products.length > 0 ? (
             <>
-              <Text style={[styles.hint, { color: appColors.inkMuted }]}>
-                Pilih produk untuk ditambahkan ke keranjang
-              </Text>
+              <View style={styles.scanRow}>
+                <Text style={[styles.hint, { color: appColors.inkMuted, flex: 1, marginBottom: 0 }]}>
+                  Pilih produk untuk ditambahkan ke keranjang
+                </Text>
+                <TouchableOpacity
+                  style={[styles.scanBtn, { backgroundColor: appColors.primary }]}
+                  onPress={startScanning}
+                  activeOpacity={0.88}
+                >
+                  <Scan size={18} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text style={styles.scanBtnText}>Scan</Text>
+                </TouchableOpacity>
+              </View>
 
               <View style={styles.grid}>
                 {products.map((item, index) => (
@@ -342,8 +411,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingBottom: 6,
     backgroundColor: colors.white,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.borderLight,
+    borderTopWidth: 2.5,
+    borderTopColor: '#0F172A',
   },
   hint: {
     ...inter.semiBold,
@@ -362,13 +431,13 @@ const styles = StyleSheet.create({
   },
   gridCard: {
     backgroundColor: colors.white,
-    borderRadius: 18,
+    borderRadius: 14,
     padding: 14,
     marginBottom: 12,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.07, 8),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   gridCardLeft: {
     marginRight: 12,
@@ -397,8 +466,11 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: colors.primary,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   addBtnText: {
     ...inter.extraBold,
@@ -421,16 +493,16 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     zIndex: 1,
     backgroundColor: colors.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
     paddingHorizontal: 18,
     paddingTop: 14,
     paddingBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.08, 10),
+    borderWidth: 2.5,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   cartPanelCollapsed: {
     paddingBottom: 14,
@@ -485,8 +557,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginVertical: 16,
     paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
+    borderTopWidth: 2.2,
+    borderTopColor: '#0F172A',
   },
   totalLabel: {
     ...inter.extraBold,
@@ -497,5 +569,48 @@ const styles = StyleSheet.create({
     ...inter.extraBold,
     fontSize: 21,
     color: colors.primary,
+  },
+  scanRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 22,
+    marginVertical: 4,
+  },
+  scanBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
+  },
+  scanBtnText: {
+    ...inter.bold,
+    color: '#FFFFFF',
+    fontSize: 13,
+    marginLeft: 6,
+  },
+  scanOverlay: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  scanText: {
+    ...inter.bold,
+    color: '#FFFFFF',
+    fontSize: 16,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  scanCancel: {
+    width: 140,
   },
 });

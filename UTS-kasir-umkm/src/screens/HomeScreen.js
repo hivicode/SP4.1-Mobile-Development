@@ -151,34 +151,38 @@ export default function HomeScreen({ navigation }) {
           <Text style={[styles.section, { color: appColors.ink }]}>Menu Cepat</Text>
         </FadeSlideIn>
         <View style={styles.menuGrid}>
-          {QUICK_MENU.map(({ label, Icon, screen }, index) => (
-            <FadeSlideIn
-              key={screen}
-              delay={150 + index * 55}
-              style={{ width: tileW }}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.menuTile,
-                  { backgroundColor: appColors.card, borderColor: appColors.borderLight },
-                ]}
-                onPress={() => navigation.navigate(screen)}
-                activeOpacity={0.9}
+          {QUICK_MENU.map(({ label, Icon, screen }, index) => {
+            const MENU_COLORS = ['#DBEAFE', '#FCE7F3', '#F3E8FF', '#D1FAE5'];
+            const tileBg = MENU_COLORS[index % MENU_COLORS.length];
+            return (
+              <FadeSlideIn
+                key={screen}
+                delay={150 + index * 55}
+                style={{ width: tileW }}
               >
-                <View
+                <TouchableOpacity
                   style={[
-                    styles.menuIconCircle,
-                    { backgroundColor: appColors.mintIconBg },
+                    styles.menuTile,
+                    { backgroundColor: tileBg },
                   ]}
+                  onPress={() => navigation.navigate(screen)}
+                  activeOpacity={0.9}
                 >
-                  <Icon size={28} color={appColors.primary} strokeWidth={2.2} />
-                </View>
-                <Text style={[styles.menuTileLabel, { color: appColors.ink }]}>
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            </FadeSlideIn>
-          ))}
+                  <View
+                    style={[
+                      styles.menuIconCircle,
+                      { backgroundColor: '#FFFFFF' },
+                    ]}
+                  >
+                    <Icon size={28} color={appColors.primary} strokeWidth={2.2} />
+                  </View>
+                  <Text style={[styles.menuTileLabel, { color: appColors.ink }]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              </FadeSlideIn>
+            );
+          })}
         </View>
       </ScrollView>
     </View>
@@ -200,12 +204,12 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: colors.creamCard,
-    borderRadius: 22,
+    borderRadius: 14,
     padding: 20,
     marginBottom: 14,
-    ...cardShadow(0.08, 12),
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    ...cardShadow(),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
   },
   trendChip: {
     position: 'absolute',
@@ -213,12 +217,13 @@ const styles = StyleSheet.create({
     right: 16,
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 10,
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderWidth: 2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   heroLabel: {
     ...inter.semiBold,
@@ -239,32 +244,36 @@ const styles = StyleSheet.create({
     backgroundColor: colors.badgeBg,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#0F172A',
   },
   badgeText: {
     ...inter.bold,
-    fontSize: 12,
+    fontSize: 11,
     color: colors.badgeText,
   },
   txSummary: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    borderRadius: 18,
+    borderRadius: 14,
     padding: 16,
     marginBottom: 22,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.06, 8),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   mintIcon: {
     width: 48,
     height: 48,
-    borderRadius: 14,
+    borderRadius: 10,
     backgroundColor: colors.mintIconBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
+    borderWidth: 2,
+    borderColor: '#0F172A',
   },
   txSummaryText: {
     flex: 1,
@@ -293,24 +302,24 @@ const styles = StyleSheet.create({
   },
   menuTile: {
     width: '100%',
-    backgroundColor: colors.white,
-    borderRadius: 20,
+    borderRadius: 14,
     paddingVertical: 22,
     paddingHorizontal: 12,
     alignItems: 'center',
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    ...cardShadow(0.06, 8),
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   menuIconCircle: {
     width: 56,
     height: 56,
-    borderRadius: 18,
-    backgroundColor: colors.mintIconBg,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
+    borderWidth: 2,
+    borderColor: '#0F172A',
   },
   menuTileLabel: {
     ...inter.bold,

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import ButtonPrimary from '../components/ButtonPrimary';
 import ScreenShell from '../components/ScreenShell';
+import { GreenHeaderTitle } from '../components/GreenHeader';
 import { getQrisAccounts, saveQrisAccounts } from '../storage/storage';
 import { colors, inter } from '../theme/design';
 import { useAppSettings } from '../context/AppSettingsContext';
@@ -62,6 +63,10 @@ export default function AddQRISScreen({ navigation, route }) {
 
   return (
     <ScreenShell>
+      <GreenHeaderTitle
+        title={editing ? "Ubah Akun QRIS" : "Tambah Akun QRIS"}
+        onBack={() => navigation.goBack()}
+      />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

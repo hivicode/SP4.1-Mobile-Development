@@ -12,11 +12,14 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { Scan } from 'lucide-react-native';
 import ButtonPrimary from '../components/ButtonPrimary';
 import ScreenShell from '../components/ScreenShell';
 import ProductThumb from '../components/ProductThumb';
+import { GreenHeaderTitle } from '../components/GreenHeader';
 import { getProducts, saveProducts } from '../storage/storage';
-import { colors, inter } from '../theme/design';
+import { colors, inter, cardShadow } from '../theme/design';
 import { useAppSettings } from '../context/AppSettingsContext';
 
 const pickerOptions = {
@@ -43,7 +46,23 @@ export default function AddProductScreen({ navigation, route }) {
     editing ? String(editing.price) : ''
   );
   const [imageUri, setImageUri] = useState(editing?.imageUri ?? null);
-  const [emojiIcon, setEmojiIcon] = useState(editing?.emoji ?? '');
+  const [barcode, setBarcode] = useState(editing?.barcode ?? '');
+  const [scanning, setScanning] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+
+  const startScanning = async () => {
+    if (!permission || !permission.granted) {
+      const res = await requestPermission();
+      if (!res.granted) {
+        Alert.alert(
+          'Izin kamera',
+          'Aplikasi memerlukan izin kamera untuk memindai barcode.'
+        );
+        return;
+      }
+    }
+    setScanning(true);
+  };
 
   const pickFromLibrary = async () => {
     const lib = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -92,16 +111,16 @@ export default function AddProductScreen({ navigation, route }) {
           name: trimmed,
           price: num,
         };
+        const bc = barcode.trim();
+        if (bc) {
+          updated.barcode = bc;
+        } else {
+          delete updated.barcode;
+        }
         if (imageUri) {
           updated.imageUri = imageUri;
         } else {
           delete updated.imageUri;
-        }
-        const em = emojiIcon.trim();
-        if (em) {
-          updated.emoji = em;
-        } else {
-          delete updated.emoji;
         }
         return updated;
       });
@@ -109,9 +128,9 @@ export default function AddProductScreen({ navigation, route }) {
     } else {
       const id = 'p_' + Date.now();
       const product = { id, name: trimmed, price: num };
+      const bc = barcode.trim();
+      if (bc) product.barcode = bc;
       if (imageUri) product.imageUri = imageUri;
-      const em = emojiIcon.trim();
-      if (em) product.emoji = em;
       await saveProducts([...list, product]);
     }
     navigation.goBack();
@@ -119,8 +138,34 @@ export default function AddProductScreen({ navigation, route }) {
 
   const idForPreview = editing?.id ?? 'preview';
 
+  if (scanning) {
+    return (
+      <View style={StyleSheet.absoluteFillObject}>
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          onBarcodeScanned={({ data }) => {
+            setBarcode(data);
+            setScanning(false);
+          }}
+        />
+        <View style={styles.scanOverlay}>
+          <Text style={styles.scanText}>Arahkan kamera ke Barcode</Text>
+          <ButtonPrimary
+            title="Batal"
+            onPress={() => setScanning(false)}
+            style={styles.scanCancel}
+          />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <ScreenShell>
+      <GreenHeaderTitle
+        title={editing ? "Ubah Produk" : "Tambah Produk"}
+        onBack={() => navigation.goBack()}
+      />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -132,7 +177,7 @@ export default function AddProductScreen({ navigation, route }) {
               styles.imageBlock,
               {
                 backgroundColor: appColors.mintIconBg,
-                borderColor: appColors.borderLight,
+                borderColor: '#0F172A',
               },
             ]}
           >
@@ -146,12 +191,11 @@ export default function AddProductScreen({ navigation, route }) {
               <View style={styles.previewPlaceholder}>
                 <ProductThumb
                   imageUri={null}
-                  emoji={emojiIcon.trim() || undefined}
                   productId={idForPreview}
                   size={96}
                 />
                 <Text style={[styles.previewHint, { color: appColors.inkMuted }]}>
-                  {emojiIcon.trim() ? 'Tap galeri/kamera untuk pakai foto' : 'Belum ada foto'}
+                  Belum ada foto. Tap galeri/kamera untuk pakai foto.
                 </Text>
               </View>
             )}
@@ -163,7 +207,7 @@ export default function AddProductScreen({ navigation, route }) {
                 styles.pickBtnPrimary,
                 {
                   backgroundColor: appColors.primarySoft,
-                  borderColor: appColors.primaryBorder,
+                  borderColor: '#0F172A',
                 },
               ]}
               onPress={pickFromLibrary}
@@ -179,7 +223,7 @@ export default function AddProductScreen({ navigation, route }) {
                 styles.pickBtnPrimary,
                 {
                   backgroundColor: appColors.primarySoft,
-                  borderColor: appColors.primaryBorder,
+                  borderColor: '#0F172A',
                 },
               ]}
               onPress={takePhoto}
@@ -200,22 +244,29 @@ export default function AddProductScreen({ navigation, route }) {
             ) : null}
           </View>
 
-          <Text style={[styles.label, { color: appColors.ink }]}>Emoji ikon</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: appColors.card,
-                borderColor: appColors.borderLight,
-                color: appColors.ink,
-              },
-            ]}
-            placeholder="Misal ☕ atau 🍜"
-            placeholderTextColor={colors.inkSoft}
-            value={emojiIcon}
-            onChangeText={setEmojiIcon}
-            maxLength={32}
-          />
+          <Text style={[styles.label, { color: appColors.ink }]}>Barcode / SKU</Text>
+          <View style={styles.barcodeInputRow}>
+            <TextInput
+              style={[
+                styles.barcodeInput,
+                {
+                  backgroundColor: appColors.card,
+                  borderColor: '#0F172A',
+                  color: appColors.ink,
+                },
+              ]}
+              placeholder="Scan atau ketik kode barcode"
+              placeholderTextColor={colors.inkSoft}
+              value={barcode}
+              onChangeText={setBarcode}
+            />
+            <TouchableOpacity
+              style={[styles.barcodeScanBtn, { backgroundColor: '#A3E635' }]}
+              onPress={startScanning}
+            >
+              <Scan size={20} color="#0F172A" strokeWidth={2.5} />
+            </TouchableOpacity>
+          </View>
 
           <Text style={[styles.label, { color: appColors.ink }]}>Nama produk</Text>
           <TextInput
@@ -223,7 +274,7 @@ export default function AddProductScreen({ navigation, route }) {
               styles.input,
               {
                 backgroundColor: appColors.card,
-                borderColor: appColors.borderLight,
+                borderColor: '#0F172A',
                 color: appColors.ink,
               },
             ]}
@@ -238,7 +289,7 @@ export default function AddProductScreen({ navigation, route }) {
               styles.input,
               {
                 backgroundColor: appColors.card,
-                borderColor: appColors.borderLight,
+                borderColor: '#0F172A',
                 color: appColors.ink,
               },
             ]}
@@ -280,12 +331,12 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     maxHeight: 220,
-    borderRadius: 18,
+    borderRadius: 14,
     overflow: 'hidden',
     marginBottom: 12,
     backgroundColor: colors.mintIconBg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
   },
   previewFull: {
     width: '100%',
@@ -313,16 +364,17 @@ const styles = StyleSheet.create({
   pickBtn: {
     paddingVertical: 10,
     paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#0F172A',
     backgroundColor: colors.card,
     marginRight: 8,
     marginBottom: 8,
+    ...cardShadow(),
   },
   pickBtnPrimary: {
     backgroundColor: colors.primarySoft,
-    borderColor: colors.primaryBorder,
+    borderColor: '#0F172A',
   },
   pickBtnText: {
     ...inter.bold,
@@ -342,8 +394,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.ink,
     marginBottom: 18,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+  },
+  barcodeInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  barcodeInput: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.ink,
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    marginRight: 10,
+  },
+  barcodeScanBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
+  },
+  scanOverlay: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+  },
+  scanText: {
+    ...inter.bold,
+    color: '#FFFFFF',
+    fontSize: 16,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  scanCancel: {
+    width: 140,
   },
   saveBtn: {
     marginTop: 8,

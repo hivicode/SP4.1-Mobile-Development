@@ -88,23 +88,6 @@ export default function WarungBootSplash() {
             <Store color={appColors.primary} size={56} strokeWidth={2} />
           )}
         </View>
-        <View style={styles.brandWrap}>
-          <Text
-            style={styles.brand}
-            allowFontScaling={false}
-            numberOfLines={1}
-          >
-            {settings.storeName || 'Kasir UMKM'}
-          </Text>
-        </View>
-        <Text
-          style={styles.tagline}
-          allowFontScaling={false}
-          numberOfLines={2}
-          textAlign="center"
-        >
-          Kasir Pintar untuk UMKM
-        </Text>
       </View>
 
       <Animated.View

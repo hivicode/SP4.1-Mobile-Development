@@ -5,12 +5,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-} from '@expo-google-fonts/inter';
+  Roboto_400Regular,
+  Roboto_500Medium,
+  Roboto_700Bold,
+  Roboto_900Black,
+} from '@expo-google-fonts/roboto';
 import WarungBootSplash from './src/components/WarungBootSplash';
 import AppNavigator from './src/navigation/AppNavigator';
 import { AppSettingsProvider, useAppSettings } from './src/context/AppSettingsContext';
@@ -21,7 +20,7 @@ enableGlobalLayoutAnimations();
 const MIN_SPLASH_MS = 1150;
 
 function mergeDefaultFontStyle(existing) {
-  const base = { fontFamily: 'Inter_400Regular' };
+  const base = { fontFamily: 'Roboto_400Regular' };
   if (existing == null) return base;
   return Array.isArray(existing) ? [base, ...existing] : [base, existing];
 }
@@ -73,11 +72,10 @@ function AppScaffold({ splashDone }) {
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-    Inter_800ExtraBold,
+    Roboto_400Regular,
+    Roboto_500Medium,
+    Roboto_700Bold,
+    Roboto_900Black,
   });
   const didApplyDefaults = useRef(false);
   const [splashDone, setSplashDone] = useState(false);

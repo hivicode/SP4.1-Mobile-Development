@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Home,
   Package,
@@ -19,7 +20,7 @@ import {
   Settings,
 } from 'lucide-react-native';
 
-import { inter } from '../theme/design';
+import { inter, cardShadow } from '../theme/design';
 import { useAppSettings } from '../context/AppSettingsContext';
 
 import HomeScreen from '../screens/HomeScreen';
@@ -43,6 +44,23 @@ const TAB_ICONS = {
   ReportScreen: BarChart3,
   SettingsScreen: Settings,
 };
+
+function getTabIndicatorColors(index) {
+  switch (index) {
+    case 0: // Home (Green)
+      return ['#BEF264', '#84CC16'];
+    case 1: // Produk (Purple)
+      return ['#C084FC', '#A855F7'];
+    case 2: // Kasir (Blue)
+      return ['#60A5FA', '#2563EB'];
+    case 3: // Laporan (Pink)
+      return ['#F472B6', '#EC4899'];
+    case 4: // Profil (Yellow/Orange)
+      return ['#FBBF24', '#F59E0B'];
+    default:
+      return ['#BEF264', '#84CC16'];
+  }
+}
 
 function SlidingTabBar({ state, descriptors, navigation }) {
   const { appColors } = useAppSettings();
@@ -95,11 +113,21 @@ function SlidingTabBar({ state, descriptors, navigation }) {
                 width: indicatorWidth,
                 height: indicatorHeight,
                 top: indicatorTop,
-                backgroundColor: appColors.primary,
                 transform: [{ translateX }],
+                overflow: 'hidden',
+                borderWidth: 1.5,
+                borderColor: '#0F172A',
+                ...cardShadow(),
               },
             ]}
-          />
+          >
+            <LinearGradient
+              colors={['#BEF264', '#84CC16']}
+              style={StyleSheet.absoluteFillObject}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+            />
+          </Animated.View>
         ) : null}
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -111,8 +139,8 @@ function SlidingTabBar({ state, descriptors, navigation }) {
                 ? options.title
                 : route.name;
           const Icon = TAB_ICONS[route.name] || Home;
-          const iconColor = focused ? appColors.onPrimary : appColors.tabInactive;
-          const labelColor = focused ? appColors.primary : appColors.tabInactive;
+          const iconColor = focused ? '#0F172A' : appColors.tabInactive;
+          const labelColor = focused ? '#0F172A' : appColors.tabInactive;
 
           const onPress = () => {
             const event = navigation.emit({
@@ -247,17 +275,17 @@ export default function AppNavigator() {
         <Stack.Screen
           name="AddProductScreen"
           component={AddProductScreen}
-          options={{ title: 'Tambah / Ubah Produk' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="AddQRISScreen"
           component={AddQRISScreen}
-          options={{ title: 'Tambah / Ubah QRIS' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="PaymentScreen"
           component={PaymentScreen}
-          options={{ title: 'Pembayaran' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="QRISScreen"
@@ -267,7 +295,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="ReceiptScreen"
           component={ReceiptScreen}
-          options={{ title: 'Struk', headerBackVisible: false }}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

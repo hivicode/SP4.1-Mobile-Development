@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ProductThumb from './ProductThumb';
-import { colors, inter } from '../theme/design';
+import { colors, inter, cardShadow } from '../theme/design';
 import { useAppSettings } from '../context/AppSettingsContext';
 
 export default function CartItem({ item, onIncrease, onDecrease, onRemove }) {
@@ -94,13 +94,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qtyBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderWidth: 2,
+    borderColor: '#0F172A',
+    ...cardShadow(),
   },
   qtyBtnText: {
     ...inter.bold,

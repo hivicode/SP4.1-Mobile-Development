@@ -2,7 +2,7 @@ import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'kasir_umkm.db';
 export const DEFAULT_STORE_SETTINGS = {
-  storeName: 'Kasir UMKM',
+  storeName: 'KES',
   ownerName: 'Bintang',
   logoUri: null,
   appearanceMode: 'light',

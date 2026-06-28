@@ -1,69 +1,69 @@
 export const inter = {
-  regular: { fontFamily: 'Inter_400Regular' },
-  medium: { fontFamily: 'Inter_500Medium' },
-  semiBold: { fontFamily: 'Inter_600SemiBold' },
-  bold: { fontFamily: 'Inter_700Bold' },
-  extraBold: { fontFamily: 'Inter_800ExtraBold' },
+  regular: { fontFamily: 'Roboto_400Regular' },
+  medium: { fontFamily: 'Roboto_500Medium' },
+  semiBold: { fontFamily: 'Roboto_500Medium' },
+  bold: { fontFamily: 'Roboto_700Bold' },
+  extraBold: { fontFamily: 'Roboto_900Black' },
 };
 
-export const defaultThemeColor = '#346739';
+export const defaultThemeColor = '#0F172A';
 
 export const materialPalettes = {
   light: {
-    primary: '#346739',
+    primary: '#0F172A',
     onPrimary: '#FFFFFF',
-    primaryContainer: '#9FCB98',
-    onPrimaryContainer: '#022105',
-    secondary: '#79AE6F',
+    primaryContainer: '#ECFCCB',
+    onPrimaryContainer: '#3F6212',
+    secondary: '#EC4899',
     onSecondary: '#FFFFFF',
-    secondaryContainer: '#F2EDC2',
-    onSecondaryContainer: '#2A3323',
-    background: '#FDFDF9',
-    surface: '#F8F9F4',
-    onSurface: '#1A1C18',
+    secondaryContainer: '#FCE7F3',
+    onSecondaryContainer: '#831843',
+    background: '#F9FAFB',
+    surface: '#FFFFFF',
+    onSurface: '#0F172A',
   },
   dark: {
-    primary: '#9FCB98',
-    onPrimary: '#003814',
-    primaryContainer: '#346739',
-    onPrimaryContainer: '#C2F4B8',
-    secondary: '#F2EDC2',
-    onSecondary: '#313321',
-    secondaryContainer: '#4D6745',
-    onSecondaryContainer: '#DDE6C6',
-    background: '#111410',
-    surface: '#191D17',
-    onSurface: '#E2E3DD',
+    primary: '#F8FAFC',
+    onPrimary: '#0F172A',
+    primaryContainer: '#334155',
+    onPrimaryContainer: '#F1F5F9',
+    secondary: '#F472B6',
+    onSecondary: '#831843',
+    secondaryContainer: '#9D174D',
+    onSecondaryContainer: '#FCE7F3',
+    background: '#0F172A',
+    surface: '#1E293B',
+    onSurface: '#F8FAFC',
   },
 };
 
 export const colors = {
-  pageBg: '#FDFDF9',
-  headerGreen: '#346739',
-  headerGreenDark: '#022105',
-  creamCard: '#F2EDC2',
-  surfaceWarm: '#F8F9F4',
+  pageBg: '#F9FAFB',
+  headerGreen: '#A3E635',
+  headerGreenDark: '#3F6212',
+  creamCard: '#FCE7F3',
+  surfaceWarm: '#FFFFFF',
   white: '#FFFFFF',
-  card: '#F8F9F4',
-  ink: '#1A1C18',
-  inkMuted: '#6B7280',
-  inkSoft: '#9CA3AF',
-  primary: '#346739',
-  primaryBorder: '#022105',
-  primarySoft: '#9FCB98',
-  mintIconBg: '#9FCB98',
-  badgeBg: '#9FCB98',
-  badgeText: '#022105',
-  tabInactive: '#9CA3AF',
+  card: '#FFFFFF',
+  ink: '#0F172A',
+  inkMuted: '#64748B',
+  inkSoft: '#94A3B8',
+  primary: '#0F172A',
+  primaryBorder: '#0F172A',
+  primarySoft: '#ECFCCB',
+  mintIconBg: '#ECFCCB',
+  badgeBg: '#ECFCCB',
+  badgeText: '#3F6212',
+  tabInactive: '#94A3B8',
   danger: '#DC2626',
   dangerSoft: '#FEE2E2',
-  borderLight: '#E5E7EB',
-  iconCircle: '#F3F4F6',
-  accent: '#C67B5C',
-  accentSoft: '#F3E6DF',
-  border: '#E5E7EB',
-  bgOuter: '#F9FAFB',
-  surface: '#F8F9F4',
+  borderLight: '#E2E8F0',
+  iconCircle: '#F1F5F9',
+  accent: '#EC4899',
+  accentSoft: '#FCE7F3',
+  border: '#E2E8F0',
+  bgOuter: '#F8FAFC',
+  surface: '#FFFFFF',
 };
 
 export const themeSwatches = [
@@ -156,7 +156,10 @@ export function createThemedColors(seedColor = defaultThemeColor, appearanceMode
 }
 
 export function cardShadow(opacity, radius) {
-  // Flat theme: intentionally no shadows/elevation.
-  // Keeping the helper avoids touching many call sites.
-  return {};
+  return {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 3.5, height: 3.5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  };
 }

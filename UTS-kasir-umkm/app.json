@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "WarungPOS",
+    "name": "KES",
     "slug": "kasir-umkm",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#3D7A4D"
+      "backgroundColor": "#1E3A8A"
     },
     "ios": {
       "supportsTablet": true
@@ -35,7 +35,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "backgroundColor": "#2F5F3D",
+          "backgroundColor": "#1E3A8A",
           "resizeMode": "contain"
         }
       ],
