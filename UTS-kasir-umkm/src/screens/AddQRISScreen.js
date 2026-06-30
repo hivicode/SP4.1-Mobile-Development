@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,7 +8,10 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  StatusBar,
+  Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ButtonPrimary from '../components/ButtonPrimary';
 import ScreenShell from '../components/ScreenShell';
 import { GreenHeaderTitle } from '../components/GreenHeader';
@@ -20,6 +23,28 @@ const PROVIDERS = ['GoPay', 'ShopeePay', 'DANA'];
 
 export default function AddQRISScreen({ navigation, route }) {
   const { settings, appColors } = useAppSettings();
+  const insets = useSafeAreaInsets();
+  const androidBar = StatusBar.currentHeight ?? 0;
+  const topInset = Platform.OS === 'android' ? Math.max(insets.top, androidBar) : insets.top;
+  const headerHeight = topInset + 64;
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
+      () => setKeyboardHeight(0)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const editing = route.params?.account;
   const [providerName, setProviderName] = useState(
     editing?.providerName ?? 'GoPay'
@@ -70,8 +95,18 @@ export default function AddQRISScreen({ navigation, route }) {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={headerHeight}
       >
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            Platform.OS === 'android' && keyboardHeight > 0
+              ? { paddingBottom: keyboardHeight + 20 }
+              : null
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={[styles.label, { color: appColors.ink }]}>Penyedia</Text>
           <View style={styles.row}>
             {PROVIDERS.map((p) => (

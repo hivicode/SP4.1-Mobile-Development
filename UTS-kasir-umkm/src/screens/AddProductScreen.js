@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,10 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  StatusBar,
+  Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Scan } from 'lucide-react-native';
@@ -40,6 +43,28 @@ function assetToPersistUri(asset) {
 
 export default function AddProductScreen({ navigation, route }) {
   const { appColors } = useAppSettings();
+  const insets = useSafeAreaInsets();
+  const androidBar = StatusBar.currentHeight ?? 0;
+  const topInset = Platform.OS === 'android' ? Math.max(insets.top, androidBar) : insets.top;
+  const headerHeight = topInset + 64;
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
+      () => setKeyboardHeight(0)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const editing = route.params?.product;
   const [name, setName] = useState(editing?.name ?? '');
   const [price, setPrice] = useState(
@@ -169,8 +194,18 @@ export default function AddProductScreen({ navigation, route }) {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={headerHeight}
       >
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            Platform.OS === 'android' && keyboardHeight > 0
+              ? { paddingBottom: keyboardHeight + 20 }
+              : null
+          ]}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={[styles.label, { color: appColors.ink }]}>Foto produk</Text>
           <View
             style={[

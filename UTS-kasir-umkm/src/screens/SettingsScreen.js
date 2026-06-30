@@ -11,7 +11,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  StatusBar,
+  Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { ImagePlus, Moon, Store, Sun, Trash2, UserRound } from 'lucide-react-native';
 import { GreenHeaderTitle } from '../components/GreenHeader';
@@ -20,6 +23,28 @@ import { colors, createThemedColors, inter } from '../theme/design';
 
 export default function SettingsScreen() {
   const { ready, settings, updateSettings } = useAppSettings();
+  const insets = useSafeAreaInsets();
+  const androidBar = StatusBar.currentHeight ?? 0;
+  const topInset = Platform.OS === 'android' ? Math.max(insets.top, androidBar) : insets.top;
+  const headerHeight = topInset + 64;
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidShow' : 'keyboardWillShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'android' ? 'keyboardDidHide' : 'keyboardWillHide',
+      () => setKeyboardHeight(0)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const [storeName, setStoreName] = useState(settings.storeName);
   const [ownerName, setOwnerName] = useState(settings.ownerName);
   const [logoUri, setLogoUri] = useState(settings.logoUri);
@@ -123,10 +148,16 @@ export default function SettingsScreen() {
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={headerHeight}
       >
         <ScrollView
           style={styles.flex}
-          contentContainerStyle={styles.content}
+          contentContainerStyle={[
+            styles.content,
+            Platform.OS === 'android' && keyboardHeight > 0
+              ? { paddingBottom: keyboardHeight + 20 }
+              : null
+          ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           bounces={false}
@@ -141,14 +172,7 @@ export default function SettingsScreen() {
               },
             ]}
           >
-            <View style={styles.sectionHeader}>
-              <View style={[styles.iconBox, { backgroundColor: previewColors.primarySoft }]}>
-                <Store size={22} color={previewColors.primary} strokeWidth={2.4} />
-              </View>
-              <Text style={[styles.sectionTitle, { color: previewColors.ink }]}>
-                Identitas Toko
-              </Text>
-            </View>
+
 
             <Text style={[styles.label, { color: previewColors.inkMuted }]}>Logo</Text>
             <View style={styles.logoRow}>
